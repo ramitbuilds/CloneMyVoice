@@ -1,6 +1,6 @@
 // Kyutai Pocket TTS (100M) ONNX Web Worker with CacheStorage support
 console.log("Pocket TTS Worker Starting...");
-self.postMessage({ type: "status", status: "Worker Thread Initialized", state: "idle" });
+self.postMessage({ type: "status", status: "Ready", state: "idle" });
 
 let ort = null;
 
@@ -87,7 +87,7 @@ async function fetchWithCache(url, progressLabel = "") {
 
     self.postMessage({
         type: "status",
-        status: `Downloading ${progressLabel || "model component"}...`,
+        status: "Preparing audio engine...",
         state: "loading",
     });
 
@@ -651,7 +651,7 @@ async function loadBundle(language, { initialLoad = false } = {}) {
 
     await loadOrt();
 
-    postMessage({ type: "status", status: `Loading Kyutai Pocket TTS (${language})...`, state: "loading" });
+    postMessage({ type: "status", status: "Preparing voice engine...", state: "loading" });
     currentLanguage = language;
 
     // 1. Fetch metadata
@@ -764,7 +764,7 @@ async function loadBundle(language, { initialLoad = false } = {}) {
         initialLoad,
     });
     postMessage({ type: "status", status: "Ready", state: "idle" });
-    postMessage({ type: "model_status", status: "ready", text: `Pocket TTS 100M Ready (${language})` });
+    postMessage({ type: "model_status", status: "ready", text: "Voice engine ready" });
     if (initialLoad) {
         postMessage({ type: "loaded" });
     }
@@ -787,7 +787,7 @@ self.onmessage = async (e) => {
 
         if (type === "generate") {
             if (!isReady) {
-                postMessage({ type: "status", status: "Downloading models (~110MB)... Will generate once ready.", state: "loading" });
+                postMessage({ type: "status", status: "Preparing voice engine...", state: "loading" });
                 pendingGenerationRequest = {
                     text: data.text,
                     voice: data.voice || currentVoiceName || "alba",
@@ -827,7 +827,7 @@ self.onmessage = async (e) => {
         }
 
         if (!isReady) {
-            postMessage({ type: "error", error: "Kyutai Pocket TTS models are still loading." });
+            postMessage({ type: "error", error: "Voice engine is preparing. Please try again in a moment." });
             return;
         }
 
@@ -836,12 +836,12 @@ self.onmessage = async (e) => {
                 postMessage({ type: "error", error: "Cannot clone voice while speech generation is active." });
                 return;
             }
-            postMessage({ type: "status", status: "Extracting voice embeddings with Mimi...", state: "loading" });
+            postMessage({ type: "status", status: "Processing voice sample...", state: "loading" });
             customVoiceEmbedding = await encodeVoiceAudio(data.audio);
             currentVoiceName = "custom";
-            await ensureCustomVoiceCached({ force: true, statusText: "Conditioning Flow LM on cloned voice..." });
+            await ensureCustomVoiceCached({ force: true, statusText: "Finalizing cloned voice..." });
             postMessage({ type: "voice_encoded", voiceName: "custom" });
-            postMessage({ type: "status", status: "Custom Voice Cloned & Ready", state: "idle" });
+            postMessage({ type: "status", status: "Voice cloned successfully", state: "idle" });
             return;
         }
 

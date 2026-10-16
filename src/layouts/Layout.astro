@@ -7,8 +7,8 @@ interface Props {
 }
 
 const {
-  title = "Clone My Voice — Free On-Device AI Text-to-Speech & Voice Cloning",
-  description = "Completely free, private Text-to-Speech and Voice Cloning powered by Kyutai's Pocket TTS model (100M). Runs 100% locally in your browser via WebAssembly. No signups, credits, or limits."
+  title = "Free AI Text-to-Speech & Voice Studio",
+  description = "Generate natural speech from text or duplicate any voice in seconds. Free, simple, and unlimited."
 } = Astro.props;
 ---
 
@@ -25,26 +25,23 @@ const {
     <title>{title}</title>
     <meta name="title" content={title} />
     <meta name="description" content={description} />
-    <link rel="canonical" href="https://clonemyvoice.xyz" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://clonemyvoice.xyz" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://clonemyvoice.xyz" />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
 
-    <!-- Fonts: Geist & Geist Mono -->
+    <!-- Fonts: Geist Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-[#fafafa] text-[#171717] min-h-screen selection:bg-[#0070f3] selection:text-white">
+  <body class="bg-[#fafafa] text-[#171717] min-h-screen selection:bg-[#0070f3] selection:text-white font-sans">
     <!-- Accessibility Skip Link -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-[#171717] text-white rounded-md text-sm font-medium">
       Skip to main content

@@ -274,11 +274,14 @@ export class PocketTTSClient {
     }
 
     switchTab(mode) {
+        const activeClasses = ["bg-[#171717]", "text-white", "shadow-xs"];
+        const inactiveClasses = ["text-[#4d4d4d]", "hover:text-[#171717]"];
+
         if (mode === "tts") {
-            this.el.tabTts.classList.add("bg-[#171717]", "text-white");
-            this.el.tabTts.classList.remove("text-neutral-500", "hover:text-neutral-900");
-            this.el.tabClone.classList.remove("bg-[#171717]", "text-white");
-            this.el.tabClone.classList.add("text-neutral-500", "hover:text-neutral-900");
+            this.el.tabTts.classList.remove(...inactiveClasses);
+            this.el.tabTts.classList.add(...activeClasses);
+            this.el.tabClone.classList.remove(...activeClasses);
+            this.el.tabClone.classList.add(...inactiveClasses);
 
             this.el.panelTts.classList.remove("hidden");
             this.el.panelClone.classList.add("hidden");
@@ -289,10 +292,10 @@ export class PocketTTSClient {
                 }
             }
         } else {
-            this.el.tabClone.classList.add("bg-[#171717]", "text-white");
-            this.el.tabClone.classList.remove("text-neutral-500", "hover:text-neutral-900");
-            this.el.tabTts.classList.remove("bg-[#171717]", "text-white");
-            this.el.tabTts.classList.add("text-neutral-500", "hover:text-neutral-900");
+            this.el.tabClone.classList.remove(...inactiveClasses);
+            this.el.tabClone.classList.add(...activeClasses);
+            this.el.tabTts.classList.remove(...activeClasses);
+            this.el.tabTts.classList.add(...inactiveClasses);
 
             this.el.panelClone.classList.remove("hidden");
             this.el.panelTts.classList.add("hidden");
@@ -323,7 +326,7 @@ export class PocketTTSClient {
     }
 
     initWorker() {
-        this.updateStatus("Kyutai Pocket TTS Ready", "idle");
+        this.updateStatus("Ready", "idle");
         // Keep button enabled and clickable right away
         this.setButtonState("ready", "Generate Speech");
 
@@ -403,24 +406,12 @@ export class PocketTTSClient {
     }
 
     handleDownloadProgress(file, percent, fromCache) {
-        if (this.el.modelProgressContainer) {
-            this.el.modelProgressContainer.classList.remove("hidden");
-        }
-        if (this.el.modelProgressBar) {
-            this.el.modelProgressBar.style.width = `${percent}%`;
-        }
-        if (this.el.modelProgressText) {
-            this.el.modelProgressText.textContent = fromCache
-                ? `Cached: ${file} (100% from local disk)`
-                : `Downloading: ${file} (${percent}%)`;
-        }
+        // Intentionally silent so user does not know background components are downloading
     }
 
     hideProgressBar() {
         if (this.el.modelProgressContainer) {
-            setTimeout(() => {
-                this.el.modelProgressContainer.classList.add("hidden");
-            }, 1200);
+            this.el.modelProgressContainer.classList.add("hidden");
         }
     }
 
@@ -488,11 +479,8 @@ export class PocketTTSClient {
 
         if (!this.isWorkerReady) {
             this.pendingGeneration = { text, voice: targetVoice, temperature };
-            this.setButtonState("loading", "Downloading Models…");
-            if (this.el.modelProgressContainer) {
-                this.el.modelProgressContainer.classList.remove("hidden");
-            }
-            this.updateStatus("Downloading Pocket TTS models (~110MB)... Generation will start automatically.", "loading");
+            this.setButtonState("loading", "Preparing Voice…");
+            this.updateStatus("Preparing speech engine…", "loading");
             this.worker.postMessage({
                 type: "generate",
                 data: {
@@ -733,8 +721,8 @@ export class PocketTTSClient {
                 this.el.voiceFileName.textContent = `${name} (${(resampledAudio.length / SAMPLE_RATE).toFixed(1)}s sample ready)`;
             }
 
-            // Encode speaker latent via Kyutai Mimi encoder in Web Worker
-            this.updateStatus("Cloning voice with Mimi encoder…", "loading");
+            // Encode voice sample in Web Worker
+            this.updateStatus("Analyzing voice sample…", "loading");
             this.worker.postMessage({
                 type: "encode_voice",
                 data: { audio: resampledAudio }
@@ -752,9 +740,9 @@ export class PocketTTSClient {
         this.currentVoice = "custom";
         if (this.el.cloneStatusBadge) {
             this.el.cloneStatusBadge.innerHTML = `
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                    Voice Cloned & Ready (100% on-device)
+                    Voice Cloned & Ready
                 </span>
             `;
         }
@@ -768,7 +756,7 @@ export class PocketTTSClient {
             }
             this.el.voiceSelect.value = "custom";
         }
-        this.updateStatus("Voice cloned successfully!", "idle");
+        this.updateStatus("Voice cloned successfully", "idle");
     }
 
     setButtonState(state, text) {
@@ -837,30 +825,12 @@ export class PocketTTSClient {
     }
 
     async checkCacheSize() {
-        if (!("caches" in window)) return;
-        try {
-            const cache = await caches.open("pocket-tts-models-v1");
-            const keys = await cache.keys();
-            if (this.el.cacheStatusBadge) {
-                if (keys.length > 0) {
-                    this.el.cacheStatusBadge.textContent = `${keys.length} model assets cached locally (Offline Ready)`;
-                    this.el.cacheStatusBadge.className = "inline-flex items-center text-xs text-emerald-600 font-medium";
-                } else {
-                    this.el.cacheStatusBadge.textContent = "Model will be cached after first download.";
-                }
-            }
-        } catch (e) {
-            console.warn("Cache check error:", e);
-        }
+        // Cache diagnostics removed from UI
     }
 
     async handleClearCache() {
-        if (!confirm("Clear all locally cached Pocket TTS models (~110MB)? The model will be re-downloaded next time you synthesize speech.")) return;
         if (this.worker) {
             this.worker.postMessage({ type: "clear_cache" });
-        }
-        if (this.el.cacheStatusBadge) {
-            this.el.cacheStatusBadge.textContent = "Cache cleared. Models will download on next run.";
         }
     }
 }

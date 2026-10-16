@@ -54,11 +54,11 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-/* Mono Eyebrow */
-.mono-eyebrow {
-  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+/* Eyebrow */
+.eyebrow {
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 11px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 600;
 }

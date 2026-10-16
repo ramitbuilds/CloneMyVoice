@@ -5,82 +5,58 @@
 <footer class="border-t border-[#ebebeb] bg-[#fafafa] py-12 text-xs text-[#8f8f8f]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
     
-    <!-- Top Row: Local Storage & Cache Diagnostics -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-white border border-[#ebebeb] shadow-xs">
-      <div class="flex items-center space-x-2.5">
-        <svg class="w-4 h-4 text-[#0070f3]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <ellipse cx="12" cy="5" rx="9" ry="3" />
-          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-          <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
-        </svg>
-        <div>
-          <span class="font-semibold text-[#171717] block">Device Cache Diagnostics</span>
-          <span id="cache-status-badge" class="text-[11px] text-[#8f8f8f]">Checking model storage status…</span>
-        </div>
-      </div>
-
-      <button
-        id="clear-cache-btn"
-        type="button"
-        class="px-3 py-1.5 rounded-[6px] text-xs font-medium text-[#4d4d4d] hover:text-[#ee0000] hover:border-[#ee0000] border border-[#ebebeb] transition-colors"
-      >
-        Clear Local Model Cache
-      </button>
-    </div>
-
     <!-- Main Footer Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div>
         <div class="flex items-center space-x-2 font-semibold text-sm text-[#171717] mb-2">
-          <div class="w-5 h-5 rounded bg-[#171717] text-white flex items-center justify-center text-[10px]">
+          <div class="w-5 h-5 rounded-md bg-[#171717] text-white flex items-center justify-center text-[10px]">
             CMV
           </div>
           <span>Clone My Voice</span>
         </div>
-        <p class="text-[11px] leading-relaxed mb-2">
-          Free, private, in-browser neural Text-to-Speech and zero-shot voice cloning powered by Kyutai's Pocket TTS model (100M).
+        <p class="text-xs leading-relaxed text-[#4d4d4d]">
+          Simple and free speech and voice generation. Create natural voices in seconds.
         </p>
-        <span class="mono-eyebrow text-[#0070f3]">Domain: clonemyvoice.xyz</span>
       </div>
 
       <div>
-        <h4 class="font-semibold text-xs text-[#171717] mb-2 uppercase tracking-wider mono-eyebrow">
-          Open Source Technology
+        <h4 class="font-semibold text-xs text-[#171717] mb-3 uppercase tracking-wider eyebrow">
+          Navigation
         </h4>
-        <ul class="space-y-1.5 text-[11px]">
+        <ul class="space-y-2 text-xs">
           <li>
-            <a href="https://github.com/kyutai-labs/pocket-tts" target="_blank" rel="noopener noreferrer" class="hover:text-[#171717] transition-colors">
-              Kyutai Labs Pocket TTS (GitHub) ↗
+            <a href="#workbench" class="text-[#4d4d4d] hover:text-[#171717] transition-colors">
+              Workbench
             </a>
           </li>
           <li>
-            <a href="https://kyutai.org" target="_blank" rel="noopener noreferrer" class="hover:text-[#171717] transition-colors">
-              Kyutai Foundation Research ↗
+            <a href="#features" class="text-[#4d4d4d] hover:text-[#171717] transition-colors">
+              Features
             </a>
           </li>
           <li>
-            <a href="https://onnxruntime.ai" target="_blank" rel="noopener noreferrer" class="hover:text-[#171717] transition-colors">
-              ONNX Runtime Web (WASM) ↗
+            <a href="#faq" class="text-[#4d4d4d] hover:text-[#171717] transition-colors">
+              FAQ
             </a>
           </li>
         </ul>
       </div>
 
       <div>
-        <h4 class="font-semibold text-xs text-[#171717] mb-2 uppercase tracking-wider mono-eyebrow">
-          Ethical AI Notice
+        <h4 class="font-semibold text-xs text-[#171717] mb-3 uppercase tracking-wider eyebrow">
+          Responsible Use
         </h4>
-        <p class="text-[11px] leading-relaxed">
-          Clone My Voice is designed for personal voice accessibility, creative narration, and authorized voice cloning. Voice cloning without express speaker consent is strictly prohibited.
+        <p class="text-xs leading-relaxed text-[#4d4d4d]">
+          Use responsibly. Voice cloning requires explicit permission from the speaker. Impersonation is strictly prohibited.
         </p>
       </div>
     </div>
 
     <!-- Bottom Line -->
-    <div class="pt-6 border-t border-[#ebebeb] flex flex-col sm:flex-row items-center justify-between text-[11px] gap-2">
-      <p>© 2026 clonemyvoice.xyz • Open Source AI under CC-BY-4.0 license.</p>
+    <div class="pt-6 border-t border-[#ebebeb] flex flex-col sm:flex-row items-center justify-between text-xs gap-2">
+      <p>© 2026 Clone My Voice. All rights reserved.</p>
       <p class="text-[#8f8f8f]">
-        Zero Cloud GPUs • Zero Data Collection • 100% Private
+        Simple, fast, and free voice tools.
       </p>
     </div>
 

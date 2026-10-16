@@ -5,9 +5,9 @@
 <section id="faq" class="py-16 md:py-24 border-t border-[#ebebeb] bg-[#fafafa]">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
-      <span class="mono-eyebrow text-[#0070f3] block mb-2">Frequently Asked Questions</span>
+      <span class="eyebrow text-[#0070f3] block mb-2">FAQ</span>
       <h2 class="text-3xl font-semibold tracking-tight text-[#171717]">
-        Everything you need to know about Clone My Voice.
+        Common questions.
       </h2>
     </div>
 
@@ -15,65 +15,65 @@
       <!-- FAQ 1 -->
       <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
         <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>Is Clone My Voice really completely free with zero limits?</span>
+          <span>Is it really free?</span>
           <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
         </summary>
         <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Yes. There are no subscriptions, credits, accounts, tokens, or artificial limits. Because inference runs entirely on your own computer’s CPU using WebAssembly, there are zero server inference costs incurred to generate speech.
+          Yes. There are no subscriptions, credits, or hidden fees. Use it as much as you like.
         </p>
       </details>
 
       <!-- FAQ 2 -->
       <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
         <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>Are my voice samples or synthesized text uploaded to any server?</span>
+          <span>Is my data private?</span>
           <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
         </summary>
         <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Never. All microphone audio, uploaded files, extracted speaker embeddings, and generated audio waveforms remain strictly inside your browser window. You can verify this in your browser’s Developer Tools Network tab—zero API requests are sent during voice cloning or speech generation.
+          Yes. Your text, voice recordings, and generated audio are never saved, stored, or shared.
         </p>
       </details>
 
       <!-- FAQ 3 -->
       <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
         <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>How does local model caching work?</span>
+          <span>Can I download the audio?</span>
           <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
         </summary>
         <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          On your first visit, the quantized Kyutai Pocket TTS ONNX models (~110&nbsp;MB total) are streamed and stored into your browser’s standard CacheStorage API. On future visits or page reloads, the files are loaded directly from your hard drive without re-downloading. You can clear the cache at any time using the cache controls in the footer.
+          Yes. Once your speech is ready, you can listen to it and download the audio file with one click.
         </p>
       </details>
 
       <!-- FAQ 4 -->
       <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
         <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>What voice sample length is required for voice cloning?</span>
+          <span>How does voice cloning work?</span>
           <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
         </summary>
         <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          A clear 5 to 10 second audio recording with minimal background noise produces excellent results. The Mimi encoder compresses the speech into continuous acoustic latents that guide Pocket TTS’s autoregressive Flow LM.
+          Record or upload a 5 to 15 second audio clip. Speak clearly in a quiet room for the best result.
         </p>
       </details>
 
       <!-- FAQ 5 -->
       <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
         <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>What are the ethical requirements for cloning a voice?</span>
+          <span>What are the rules for cloning a voice?</span>
           <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
         </summary>
         <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          You must own the voice or have explicit, informed permission from the speaker. Clone My Voice strictly prohibits impersonation, defamation, malicious deepfakes, or unauthorized synthetic voice creation.
+          You must have permission from the person whose voice you use. Do not use this tool to impersonate or mislead anyone.
         </p>
       </details>
     </div>
