@@ -1,79 +1,106 @@
 ---
-// Frequently Asked Questions in pure Vercel light design style
+// Frequently Asked Questions in clean Rebus style (no emojis, no pills)
 ---
 
-<section id="faq" class="py-16 md:py-24 border-t border-[#ebebeb] bg-[#fafafa]">
+<section id="faq" class="py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <span class="eyebrow text-[#0070f3] block mb-2">FAQ</span>
-      <h2 class="text-3xl font-semibold tracking-tight text-[#171717]">
-        Common questions.
+    <div class="mb-12">
+      <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
+        FAQ // Questions & Answers
+      </span>
+      <h2 class="text-3xl font-bold tracking-tight text-[#141413]">
+        Frequently Asked Questions
       </h2>
     </div>
 
     <div class="space-y-4">
       <!-- FAQ 1 -->
-      <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
-        <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>Is it really free?</span>
-          <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-[#5c5b56]">01.</span>
+            <span>Is this really free to use?</span>
+          </div>
+          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         </summary>
-        <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Yes. There are no subscriptions, credits, or hidden fees. Use it as much as you like.
+        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+          Yes. There are no subscriptions, credits, or hidden fees. Generate as much speech as you like.
         </p>
       </details>
 
       <!-- FAQ 2 -->
-      <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
-        <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>Is my data private?</span>
-          <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-[#5c5b56]">02.</span>
+            <span>Is my data kept private?</span>
+          </div>
+          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         </summary>
-        <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Yes. Your text, voice recordings, and generated audio are never saved, stored, or shared.
+        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+          Yes. Your text, voice recordings, and generated speech files are never stored, saved, or shared with anyone.
         </p>
       </details>
 
       <!-- FAQ 3 -->
-      <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
-        <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>Can I download the audio?</span>
-          <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-[#5c5b56]">03.</span>
+            <span>Can I download the audio file?</span>
+          </div>
+          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         </summary>
-        <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Yes. Once your speech is ready, you can listen to it and download the audio file with one click.
+        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+          Yes. As soon as your audio is generated, click the Download Audio button to save it instantly to your device.
         </p>
       </details>
 
       <!-- FAQ 4 -->
-      <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
-        <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>How does voice cloning work?</span>
-          <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-[#5c5b56]">04.</span>
+            <span>How does voice cloning work?</span>
+          </div>
+          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         </summary>
-        <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          Record or upload a 5 to 15 second audio clip. Speak clearly in a quiet room for the best result.
+        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+          Record or upload a 5 to 15 second audio sample. Speak clearly into the microphone in a quiet room for the best results.
         </p>
       </details>
 
       <!-- FAQ 5 -->
-      <details class="group vercel-card rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer bg-white border border-[#ebebeb] shadow-xs">
-        <summary class="flex items-center justify-between font-medium text-sm text-[#171717]">
-          <span>What are the rules for cloning a voice?</span>
-          <span class="ml-4 flex-shrink-0 text-[#8f8f8f] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-[#5c5b56]">05.</span>
+            <span>What are the rules for cloning a voice?</span>
+          </div>
+          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         </summary>
-        <p class="text-xs text-[#4d4d4d] mt-3 leading-relaxed">
-          You must have permission from the person whose voice you use. Do not use this tool to impersonate or mislead anyone.
+        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+          You must have clear permission from the speaker to clone their voice. Impersonating individuals or generating deceptive audio is prohibited.
         </p>
       </details>
     </div>

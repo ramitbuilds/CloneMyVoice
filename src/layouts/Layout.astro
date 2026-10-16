@@ -7,8 +7,8 @@ interface Props {
 }
 
 const {
-  title = "Free AI Text-to-Speech & Voice Studio",
-  description = "Generate natural speech from text or duplicate any voice in seconds. Free, simple, and unlimited."
+  title = "Clone My Voice — Free AI Speech & Voice Studio",
+  description = "Turn text into speech or create any voice from a short audio clip. Free, instant, and simple."
 } = Astro.props;
 ---
 
@@ -36,14 +36,14 @@ const {
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
 
-    <!-- Fonts: Geist Sans -->
+    <!-- Fonts: Plus Jakarta Sans & Instrument Serif for Rebus design -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-[#fafafa] text-[#171717] min-h-screen selection:bg-[#0070f3] selection:text-white font-sans">
+  <body class="bg-[#fbf9f5] text-[#141413] min-h-screen selection:bg-[#141413] selection:text-white font-sans antialiased">
     <!-- Accessibility Skip Link -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-[#171717] text-white rounded-md text-sm font-medium">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-[#141413] text-white border border-[#141413] text-xs font-semibold tracking-wide uppercase">
       Skip to main content
     </a>
 

@@ -740,9 +740,8 @@ export class PocketTTSClient {
         this.currentVoice = "custom";
         if (this.el.cloneStatusBadge) {
             this.el.cloneStatusBadge.innerHTML = `
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                    Voice Cloned & Ready
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold bg-[#f4f0e6] text-[#141413] border border-[#141413]">
+                    Voice Ready
                 </span>
             `;
         }

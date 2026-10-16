@@ -1,49 +1,55 @@
 ---
-// Navbar component in pure Vercel light design system
+// Navbar component styled in Rebus design aesthetic
 ---
 
-<header class="sticky top-0 z-40 w-full border-b border-[#ebebeb] bg-[#fafafa]/90 backdrop-blur-md">
+<header class="sticky top-0 z-40 w-full border-b border-[#e5e0d4] bg-[#fbf9f5]/90 backdrop-blur-md">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-    <!-- Brand / Logo -->
+    <!-- Brand / Logo (Rebus Emblem) -->
     <div class="flex items-center space-x-3">
-      <a href="/" class="flex items-center space-x-2.5 group focus-visible:ring-2 focus-visible:ring-[#0070f3] rounded-md">
-        <!-- Soundwave badge -->
-        <div class="w-8 h-8 rounded-md bg-[#171717] text-white flex items-center justify-center font-bold shadow-xs group-hover:scale-105 transition-transform">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <a href="/" class="flex items-center space-x-3 group focus-visible:ring-2 focus-visible:ring-[#141413]">
+        <!-- Tactile Rebus Stamp Mark -->
+        <div class="w-9 h-9 border border-[#141413] bg-[#141413] text-white flex items-center justify-center font-bold rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
+          <svg class="w-5 h-5 text-[#fbf9f5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
           </svg>
         </div>
-        <span class="text-base font-semibold tracking-tight text-[#171717]">Clone My Voice</span>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-tight text-[#141413] uppercase">Clone My Voice</span>
+          <span class="text-[10px] text-[#5c5b56] tracking-widest uppercase font-medium">Free Speech Studio</span>
+        </div>
       </a>
     </div>
 
     <!-- Navigation / Actions -->
-    <div class="flex items-center space-x-4">
-      <a 
-        href="#workbench" 
-        class="hidden md:inline-flex text-xs font-medium text-[#4d4d4d] hover:text-[#171717] px-3 py-1.5 transition-colors"
-      >
-        Workbench
-      </a>
-      <a 
-        href="#features" 
-        class="hidden md:inline-flex text-xs font-medium text-[#4d4d4d] hover:text-[#171717] px-3 py-1.5 transition-colors"
-      >
-        Features
-      </a>
-      <a 
-        href="#faq" 
-        class="hidden sm:inline-flex text-xs font-medium text-[#4d4d4d] hover:text-[#171717] px-3 py-1.5 transition-colors"
-      >
-        FAQ
-      </a>
+    <div class="flex items-center space-x-6">
+      <nav class="hidden md:flex items-center space-x-6 text-xs font-semibold uppercase tracking-wider text-[#5c5b56]">
+        <a 
+          href="#workbench" 
+          class="hover:text-[#141413] transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#141413] hover:after:w-full after:transition-all"
+        >
+          Studio
+        </a>
+        <a 
+          href="#features" 
+          class="hover:text-[#141413] transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#141413] hover:after:w-full after:transition-all"
+        >
+          Features
+        </a>
+        <a 
+          href="#faq" 
+          class="hover:text-[#141413] transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#141413] hover:after:w-full after:transition-all"
+        >
+          FAQ
+        </a>
+      </nav>
 
-      <!-- Action Button (No pill) -->
+      <!-- Action Button (Tactile Stamp, No pill) -->
       <a
         href="#workbench"
-        class="inline-flex items-center px-3.5 py-1.5 rounded-md text-xs font-medium bg-[#171717] text-white hover:bg-neutral-800 transition-colors shadow-xs"
+        class="inline-flex items-center px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
       >
-        <span>Start Creating</span>
+        <span>Open Studio</span>
+        <span class="ml-1.5">→</span>
       </a>
     </div>
   </div>

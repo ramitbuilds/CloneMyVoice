@@ -1,80 +1,116 @@
 ---
-// Technical architecture and engineering breakdown in pure Vercel light design style
+// Features section styled in Rebus design aesthetic: structured cards, SVG icons, clean numbers, no emojis, no pills
 ---
 
-<section id="features" class="py-16 md:py-24 border-t border-[#ebebeb] bg-white">
+<section id="features" class="py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mb-12">
-      <span class="eyebrow text-[#0070f3] block mb-2">Features</span>
-      <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#171717] mb-4">
+      <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
+        Features // Voice Studio
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#141413] mb-3">
         Simple, powerful voice tools.
       </h2>
-      <p class="text-base text-[#4d4d4d] leading-relaxed">
-        Create natural speech, realistic voiceovers, and voice clones in seconds.
+      <p class="text-base text-[#5c5b56] leading-relaxed">
+        Everything you need to turn text into lifelike speech or create custom voices in seconds.
       </p>
     </div>
 
-    <!-- 4-Card Grid (Clean hairline cards, no pills) -->
+    <!-- 4-Card Rebus Editorial Grid (Structured Cards, No Pills, No Emojis) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Card 1 -->
-      <div class="vercel-card rounded-xl p-6 sm:p-8 space-y-3">
-        <div class="w-10 h-10 rounded-lg bg-[#f2f2f2] flex items-center justify-center text-[#171717] mb-4">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-            <line x1="12" y1="19" x2="12" y2="22" />
-          </svg>
+      
+      <!-- Card 01 -->
+      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
+              01
+            </span>
+          </div>
+          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+            Natural Human Tone
+          </h3>
+          <p class="text-sm text-[#5c5b56] leading-relaxed">
+            Clear, lifelike speech with natural pacing and emotion. Sounds like a real person speaking, never a robot.
+          </p>
         </div>
-        <span class="eyebrow text-[#8f8f8f]">Voice Quality</span>
-        <h3 class="text-lg font-semibold text-[#171717]">Natural Human Tone</h3>
-        <p class="text-sm text-[#4d4d4d] leading-relaxed">
-          Clear, lifelike speech with natural pacing and emotion. Sounds like a real person, not a robot.
-        </p>
       </div>
 
-      <!-- Card 2 -->
-      <div class="vercel-card rounded-xl p-6 sm:p-8 space-y-3">
-        <div class="w-10 h-10 rounded-lg bg-[#f2f2f2] flex items-center justify-center text-[#171717] mb-4">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-          </svg>
+      <!-- Card 02 -->
+      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
+              02
+            </span>
+          </div>
+          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+            Instant Voice Cloning
+          </h3>
+          <p class="text-sm text-[#5c5b56] leading-relaxed">
+            Record or upload a 5-second audio sample to generate speech in that exact tone and cadence.
+          </p>
         </div>
-        <span class="eyebrow text-[#8f8f8f]">Voice Cloning</span>
-        <h3 class="text-lg font-semibold text-[#171717]">Clone Any Voice</h3>
-        <p class="text-sm text-[#4d4d4d] leading-relaxed">
-          Record or upload a 5-second audio sample to generate speech in that exact voice.
-        </p>
       </div>
 
-      <!-- Card 3 -->
-      <div class="vercel-card rounded-xl p-6 sm:p-8 space-y-3">
-        <div class="w-10 h-10 rounded-lg bg-[#f2f2f2] flex items-center justify-center text-[#171717] mb-4">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-            <path d="M2 12h20" />
-          </svg>
+      <!-- Card 03 -->
+      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                <path d="M2 12h20" />
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
+              03
+            </span>
+          </div>
+          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+            5 Major Languages
+          </h3>
+          <p class="text-sm text-[#5c5b56] leading-relaxed">
+            Create speech in English, Spanish, German, Italian, and Portuguese with authentic accents.
+          </p>
         </div>
-        <span class="eyebrow text-[#8f8f8f]">Languages</span>
-        <h3 class="text-lg font-semibold text-[#171717]">5 Languages</h3>
-        <p class="text-sm text-[#4d4d4d] leading-relaxed">
-          Create speech in English, Spanish, German, Italian, and Portuguese with authentic accents.
-        </p>
       </div>
 
-      <!-- Card 4 -->
-      <div class="vercel-card rounded-xl p-6 sm:p-8 space-y-3">
-        <div class="w-10 h-10 rounded-lg bg-[#f2f2f2] flex items-center justify-center text-[#171717] mb-4">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+      <!-- Card 04 -->
+      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
+              04
+            </span>
+          </div>
+          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+            100% Free & Unlimited
+          </h3>
+          <p class="text-sm text-[#5c5b56] leading-relaxed">
+            No accounts, no credit limits, and no paid tiers. Generate as much audio as you need.
+          </p>
         </div>
-        <span class="eyebrow text-[#8f8f8f]">Pricing</span>
-        <h3 class="text-lg font-semibold text-[#171717]">100% Free & Unlimited</h3>
-        <p class="text-sm text-[#4d4d4d] leading-relaxed">
-          No signups, no credit limits, and no paid tiers. Generate as much audio as you need.
-        </p>
       </div>
+
     </div>
   </div>
 </section>

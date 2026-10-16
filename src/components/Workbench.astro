@@ -1,45 +1,53 @@
 ---
-// Main interactive Workbench: Text-to-Speech and AI Voice Cloning Studio
+// Main interactive Workbench: Text-to-Speech and AI Voice Studio in Rebus design aesthetic (no emojis, no pills)
 ---
 
-<section id="workbench" class="py-12 md:py-16 bg-[#fafafa]">
+<section id="workbench" class="py-12 md:py-16 bg-[#fbf9f5]">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
     
-    <!-- Mode Switcher Tabs (Segmented control, no pills) -->
-    <div class="flex items-center justify-center mb-8">
-      <div class="inline-flex p-1 rounded-lg bg-[#f2f2f2] border border-[#ebebeb] shadow-xs">
-        <button
-          id="tab-tts"
-          type="button"
-          class="px-5 py-2 rounded-md text-xs sm:text-sm font-medium bg-[#171717] text-white hover:text-white transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-[#0070f3]"
-        >
-          <span class="inline-flex items-center space-x-1.5">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
-            </svg>
-            <span>Text-to-Speech</span>
-          </span>
-        </button>
+    <!-- Workbench Studio Container Card -->
+    <div class="bg-white border-2 border-[#141413] rebus-stamp-shadow-lg p-6 sm:p-8 relative">
 
-        <button
-          id="tab-clone"
-          type="button"
-          class="px-5 py-2 rounded-md text-xs sm:text-sm font-medium text-[#4d4d4d] hover:text-[#171717] transition-all focus-visible:ring-2 focus-visible:ring-[#0070f3]"
-        >
-          <span class="inline-flex items-center space-x-1.5">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-            <span>Voice Cloning</span>
-          </span>
-        </button>
+      <!-- Header Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-[#e5e0d4] gap-4">
+        <div>
+          <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-widest block mb-0.5">Studio</span>
+          <h2 class="text-lg font-bold text-[#141413] tracking-tight uppercase">
+            Speech & Voice Generator
+          </h2>
+        </div>
+
+        <!-- Mode Switcher Tabs (Segmented control, strictly rectangular, no pills) -->
+        <div class="inline-flex p-1 bg-[#f4f0e6] border border-[#141413]">
+          <button
+            id="tab-tts"
+            type="button"
+            class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-[#171717] text-white hover:text-white transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-[#141413] cursor-pointer"
+          >
+            <span class="inline-flex items-center space-x-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
+              </svg>
+              <span>Text-to-Speech</span>
+            </span>
+          </button>
+
+          <button
+            id="tab-clone"
+            type="button"
+            class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#4d4d4d] hover:text-[#171717] transition-all focus-visible:ring-2 focus-visible:ring-[#141413] cursor-pointer"
+          >
+            <span class="inline-flex items-center space-x-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+              </svg>
+              <span>Voice Cloning</span>
+            </span>
+          </button>
+        </div>
       </div>
-    </div>
-
-    <!-- Main Container Card -->
-    <div class="vercel-card rounded-2xl p-6 sm:p-8 relative bg-white border border-[#ebebeb] shadow-sm">
 
       <!-- Silent Background Model Container (Kept hidden so DOM references exist safely) -->
       <div id="model-progress-container" class="hidden">
@@ -53,13 +61,13 @@
       <div id="panel-tts" class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <!-- Language Selector -->
-          <div>
-            <label for="language-select" class="block text-xs font-semibold text-[#4d4d4d] mb-1.5 uppercase tracking-wide">
+          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <label for="language-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
               Language
             </label>
             <select
               id="language-select"
-              class="w-full px-3 py-2 text-xs sm:text-sm rounded-md bg-white border border-[#ebebeb] text-[#171717] focus-visible:ring-2 focus-visible:ring-[#0070f3]"
+              class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
             >
               <option value="english_2026-04" selected>English (Natural)</option>
               <option value="german">German (Deutsch)</option>
@@ -69,14 +77,14 @@
             </select>
           </div>
 
-          <!-- Predefined AI Voice -->
-          <div>
-            <label for="voice-select" class="block text-xs font-semibold text-[#4d4d4d] mb-1.5 uppercase tracking-wide">
+          <!-- Predefined Voice -->
+          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <label for="voice-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
               Voice
             </label>
             <select
               id="voice-select"
-              class="w-full px-3 py-2 text-xs sm:text-sm rounded-md bg-white border border-[#ebebeb] text-[#171717] focus-visible:ring-2 focus-visible:ring-[#0070f3]"
+              class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
             >
               <option value="alba" selected>Alba (Warm & Clear, Female)</option>
               <option value="marius">Marius (Articulate & Natural, Male)</option>
@@ -90,12 +98,12 @@
           </div>
 
           <!-- Expressiveness Slider -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="temperature-slider" class="text-xs font-semibold text-[#4d4d4d] uppercase tracking-wide">
+          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <div class="flex items-center justify-between mb-2">
+              <label for="temperature-slider" class="text-xs font-bold text-[#141413] uppercase tracking-wider">
                 Expressiveness
               </label>
-              <span id="temperature-val" class="text-xs font-medium text-[#171717]">0.70</span>
+              <span id="temperature-val" class="text-xs font-bold text-[#141413] px-1.5 py-0.5 bg-white border border-[#141413]">0.70</span>
             </div>
             <input
               id="temperature-slider"
@@ -104,7 +112,7 @@
               max="1.00"
               step="0.05"
               value="0.70"
-              class="w-full accent-[#0070f3] cursor-pointer"
+              class="w-full accent-[#141413] cursor-pointer mt-2"
             />
           </div>
         </div>
@@ -112,27 +120,22 @@
 
       <!-- PANEL 2: AI Voice Cloning Settings -->
       <div id="panel-clone" class="hidden space-y-6">
-        <div class="p-4 rounded-xl bg-[#f8f8f8] border border-[#ebebeb]">
-          <h2 class="text-sm font-semibold text-[#171717] mb-1 flex items-center space-x-2">
-            <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-            <span>Step 1: Add a reference audio clip (3–15 seconds)</span>
-          </h2>
-          <p class="text-xs text-[#4d4d4d] mb-4">
-            Record with your microphone or upload an audio file to duplicate this voice.
+        <div class="p-5 bg-[#fbf9f5] border border-[#141413]">
+          <h3 class="text-xs font-bold text-[#141413] uppercase tracking-wider mb-1">
+            Step 1: Add Audio Sample (3–15 seconds)
+          </h3>
+          <p class="text-xs text-[#5c5b56] mb-4">
+            Record a short sample or upload an audio file to duplicate this voice.
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Option A: Record with Mic -->
-            <div class="p-4 rounded-lg bg-white border border-[#ebebeb] flex flex-col justify-between shadow-2xs">
+            <div class="p-4 bg-white border border-[#141413] flex flex-col justify-between rebus-stamp-shadow-sm">
               <div>
-                <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block mb-1">Option A</span>
-                <h3 class="text-xs font-semibold text-[#171717] mb-2">Record with Microphone</h3>
-                <p class="text-[11px] text-[#666666] mb-3">
-                  Click below to record a short voice sample.
+                <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block mb-1">Method A</span>
+                <h4 class="text-xs font-bold text-[#141413] mb-1">Record with Microphone</h4>
+                <p class="text-xs text-[#5c5b56] mb-4">
+                  Speak clearly into your microphone for 5 to 10 seconds.
                 </p>
               </div>
 
@@ -140,29 +143,29 @@
                 <button
                   id="record-btn"
                   type="button"
-                  class="inline-flex items-center px-3 py-2 rounded-md text-xs font-medium bg-[#171717] text-white hover:bg-neutral-800 transition-colors focus-visible:ring-2 focus-visible:ring-[#0070f3]"
+                  class="inline-flex items-center px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                     <line x1="12" y1="19" x2="12" y2="22" />
                   </svg>
-                  <span>Record with Mic</span>
+                  <span>Record Mic</span>
                 </button>
-                <span id="record-timer" class="hidden text-xs text-red-600 font-semibold animate-pulse">00:00</span>
+                <span id="record-timer" class="hidden text-xs text-red-600 font-bold animate-pulse">00:00</span>
               </div>
             </div>
 
             <!-- Option B: Upload Audio File -->
             <div
               id="voice-dropzone"
-              class="p-4 rounded-lg bg-white border border-dashed border-[#ebebeb] hover:border-[#0070f3] transition-colors flex flex-col justify-between shadow-2xs"
+              class="p-4 bg-white border border-dashed border-[#141413] hover:border-black transition-colors flex flex-col justify-between"
             >
               <div>
-                <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block mb-1">Option B</span>
-                <h3 class="text-xs font-semibold text-[#171717] mb-1">Upload Audio File (.wav, .mp3)</h3>
-                <p class="text-[11px] text-[#666666] mb-2" id="voice-file-name">
-                  Drop audio file here or click to browse
+                <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block mb-1">Method B</span>
+                <h4 class="text-xs font-bold text-[#141413] mb-1">Upload Audio File (.wav, .mp3)</h4>
+                <p class="text-xs text-[#5c5b56] mb-4" id="voice-file-name">
+                  Drop audio clip here or choose file
                 </p>
               </div>
 
@@ -171,48 +174,46 @@
                 <button
                   type="button"
                   onclick="document.getElementById('voice-file-input').click()"
-                  class="inline-flex items-center px-3 py-2 rounded-md text-xs font-medium bg-[#f2f2f2] text-[#171717] border border-[#ebebeb] hover:bg-[#e5e5e5] transition-colors"
+                  class="inline-flex items-center px-3.5 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#f4f0e6] text-[#141413] hover:bg-[#e8e2d4] transition-colors cursor-pointer"
                 >
                   <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                  <span>Select Audio File</span>
+                  <span>Select File</span>
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Preview Player for Cloned Sample -->
-          <div id="voice-preview-player" class="hidden mt-4 pt-4 border-t border-[#ebebeb] flex items-center justify-between flex-wrap gap-2">
+          <div id="voice-preview-player" class="hidden mt-4 pt-4 border-t border-[#e5e0d4] flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center space-x-3">
-              <span class="text-xs font-medium text-[#171717]">Sample Preview:</span>
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Preview Sample:</span>
               <audio id="voice-preview-audio" controls class="h-8 max-w-[240px]"></audio>
             </div>
-            <div id="clone-status-badge">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                Awaiting sample…
-              </span>
+            <div id="clone-status-badge" class="text-xs font-bold text-[#5c5b56]">
+              Awaiting sample…
             </div>
           </div>
         </div>
 
         <!-- Step 2: Ethical Voice Permission Confirmation -->
-        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+        <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
           <div class="flex items-start space-x-3">
             <input
               id="clone-consent-checkbox"
               type="checkbox"
-              class="mt-1 w-4 h-4 text-[#0070f3] rounded border-neutral-300 focus:ring-[#0070f3] cursor-pointer"
+              class="mt-1 w-4 h-4 text-[#141413] rounded-none border-[#141413] focus:ring-[#141413] cursor-pointer"
             />
-            <label for="clone-consent-checkbox" class="text-xs text-[#4d4d4d] leading-relaxed cursor-pointer select-none">
-              <strong class="text-[#171717] font-semibold">Permission Confirmation:</strong>
+            <label for="clone-consent-checkbox" class="text-xs text-[#5c5b56] leading-relaxed cursor-pointer select-none">
+              <strong class="text-[#141413] font-bold">Permission Confirmation:</strong>
               I confirm that I have permission from the speaker to use this voice, and will not use it to impersonate or mislead anyone.
             </label>
           </div>
-          <p id="clone-consent-warning" class="hidden text-[11px] text-red-600 font-medium mt-2 pl-7">
-            ⚠️ You must check this box to confirm permission before generating speech with a cloned voice.
+          <p id="clone-consent-warning" class="hidden text-xs text-red-600 font-bold mt-2 pl-7">
+            You must check this box to confirm permission before generating speech.
           </p>
         </div>
       </div>
@@ -220,11 +221,11 @@
       <!-- Text Input Area -->
       <div class="mt-6 space-y-3">
         <div class="flex items-center justify-between">
-          <label for="text-input" class="text-xs font-semibold text-[#4d4d4d] uppercase tracking-wide">
+          <label for="text-input" class="text-xs font-bold text-[#141413] uppercase tracking-wider">
             Text to Speak
           </label>
-          <span class="text-xs text-[#8f8f8f]">
-            <span id="char-count">78</span> characters
+          <span class="text-xs font-medium text-[#5c5b56]">
+            <span id="char-count" class="font-bold text-[#141413]">78</span> characters
           </span>
         </div>
 
@@ -232,38 +233,38 @@
           <textarea
             id="text-input"
             rows="4"
-            class="w-full p-4 rounded-xl bg-white border border-[#ebebeb] text-sm text-[#171717] placeholder-[#8f8f8f] focus-visible:ring-2 focus-visible:ring-[#0070f3] resize-y leading-relaxed shadow-2xs"
+            class="w-full p-4 bg-[#fbf9f5] border border-[#141413] text-sm text-[#141413] placeholder-[#96948c] focus-visible:ring-2 focus-visible:ring-[#141413] resize-y leading-relaxed font-medium"
             placeholder="Type or paste any text to turn into speech…"
           >Welcome! Type or paste any text here to turn it into clear, natural speech.</textarea>
         </div>
 
-        <!-- Sample Presets (No pills) -->
+        <!-- Sample Presets (No Pills) -->
         <div class="flex flex-wrap items-center gap-2 pt-1">
-          <span class="text-xs text-[#8f8f8f] mr-1">Presets:</span>
+          <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider mr-1">Sample text:</span>
           <button
             type="button"
-            class="sample-preset-btn px-3 py-1 rounded-md text-xs bg-[#f2f2f2] border border-[#ebebeb] text-[#4d4d4d] hover:text-[#171717] hover:bg-[#e5e5e5] transition-colors"
+            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
             data-text="Welcome! Type or paste any text here to turn it into clear, natural speech."
           >
             Welcome
           </button>
           <button
             type="button"
-            class="sample-preset-btn px-3 py-1 rounded-md text-xs bg-[#f2f2f2] border border-[#ebebeb] text-[#4d4d4d] hover:text-[#171717] hover:bg-[#e5e5e5] transition-colors"
+            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
             data-text="Thank you for reaching out today. I am happy to help you with your question."
           >
             Support
           </button>
           <button
             type="button"
-            class="sample-preset-btn px-3 py-1 rounded-md text-xs bg-[#f2f2f2] border border-[#ebebeb] text-[#4d4d4d] hover:text-[#171717] hover:bg-[#e5e5e5] transition-colors"
+            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
             data-text="The sun was setting behind the hills, casting a warm golden glow across the quiet valley."
           >
             Story
           </button>
           <button
             type="button"
-            class="sample-preset-btn px-3 py-1 rounded-md text-xs bg-[#f2f2f2] border border-[#ebebeb] text-[#4d4d4d] hover:text-[#171717] hover:bg-[#e5e5e5] transition-colors"
+            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
             data-text="In this quick tutorial, you will learn how to create high quality audio in seconds."
           >
             Tutorial
@@ -271,19 +272,19 @@
         </div>
       </div>
 
-      <!-- Action Buttons (No pills) -->
+      <!-- Action Buttons (No Pills) -->
       <div class="mt-8 flex items-center space-x-3">
         <!-- CTA button -->
         <button
           id="generate-btn"
           type="button"
-          class="px-6 py-2.5 rounded-md text-sm font-medium bg-[#171717] text-white hover:bg-neutral-800 active:scale-[0.99] transition-all flex items-center space-x-2 shadow-sm focus-visible:ring-2 focus-visible:ring-[#0070f3] cursor-pointer"
+          class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center space-x-2 cursor-pointer"
         >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
           <span id="btn-text">Generate Speech</span>
-          <div id="btn-loader" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div id="btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
         </button>
 
         <!-- Stop Button -->
@@ -291,41 +292,41 @@
           id="stop-btn"
           type="button"
           disabled
-          class="px-4 py-2.5 rounded-md text-sm font-medium bg-transparent text-[#4d4d4d] hover:text-[#171717] border border-[#ebebeb] hover:bg-[#f2f2f2] transition-colors focus-visible:ring-2 focus-visible:ring-[#0070f3] disabled:opacity-40 disabled:cursor-not-allowed"
+          class="px-4 py-2.5 border border-[#e5e0d4] text-xs font-bold uppercase tracking-wider bg-transparent text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           Stop
         </button>
       </div>
 
       <!-- Output Section: Spectrum Visualizer, Audio Player & Download -->
-      <div class="mt-8 pt-8 border-t border-[#ebebeb] space-y-6">
+      <div class="mt-8 pt-8 border-t border-[#e5e0d4] space-y-6">
         
         <!-- Audio Visualizer Canvas -->
-        <div class="rounded-xl p-4 bg-[#f8f8f8] border border-[#ebebeb]">
+        <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
           <div class="flex items-center justify-between mb-3 text-xs">
-            <span class="text-xs font-medium text-[#4d4d4d]">Audio Spectrum & Waveform</span>
+            <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Audio Waveform Spectrum</span>
             <div class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span id="stat-status" class="text-xs font-medium text-[#171717]">Ready</span>
+              <span class="w-2 h-2 bg-emerald-500"></span>
+              <span id="stat-status" class="text-xs font-bold text-[#141413] uppercase tracking-wider">Ready</span>
             </div>
           </div>
-          <div class="w-full h-20 bg-white rounded-lg border border-[#ebebeb] overflow-hidden relative shadow-2xs">
+          <div class="w-full h-20 bg-white border border-[#141413] overflow-hidden relative">
             <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
           </div>
         </div>
 
         <!-- Audio Player & Download Button -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-white border border-[#ebebeb] shadow-xs">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-white border border-[#141413] rebus-stamp-shadow-sm">
           <div class="flex items-center space-x-3 w-full sm:w-auto">
             <audio id="audio-playback" controls class="w-full sm:w-80 h-10"></audio>
-            <span id="audio-duration-text" class="text-xs font-medium text-[#8f8f8f] whitespace-nowrap">0.0s</span>
+            <span id="audio-duration-text" class="text-xs font-bold text-[#5c5b56] whitespace-nowrap">0.0s</span>
           </div>
 
           <button
             id="download-audio-btn"
             type="button"
             disabled
-            class="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-md text-xs font-medium bg-[#171717] text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+            class="inline-flex items-center justify-center space-x-2 px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -338,36 +339,36 @@
 
         <!-- Performance Stats (Clean, simple, no mono typography) -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="p-3 rounded-lg bg-[#f8f8f8] border border-[#ebebeb]">
-            <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block">Response Time</span>
-            <div class="text-lg font-semibold text-[#171717] mt-1">
-              <span id="stat-ttfb">--</span> <span class="text-xs font-normal text-[#8f8f8f]">ms</span>
+          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Response Time</span>
+            <div class="text-base font-bold text-[#141413] mt-1">
+              <span id="stat-ttfb">--</span> <span class="text-xs font-normal text-[#5c5b56]">ms</span>
             </div>
-            <span class="text-[10px] text-[#8f8f8f]">Fast generation</span>
+            <span class="text-[10px] text-[#5c5b56]">Fast generation</span>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#f8f8f8] border border-[#ebebeb]">
-            <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block">Speed Ratio</span>
-            <div class="text-lg font-semibold text-[#171717] mt-1">
-              <span id="stat-rtfx">--</span> <span class="text-xs font-normal text-[#8f8f8f]">x</span>
+          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Speed Ratio</span>
+            <div class="text-base font-bold text-[#141413] mt-1">
+              <span id="stat-rtfx">--</span> <span class="text-xs font-normal text-[#5c5b56]">x</span>
             </div>
-            <span class="text-[10px] text-emerald-600">Faster than playback</span>
+            <span class="text-[10px] text-emerald-700 font-semibold">Faster than audio</span>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#f8f8f8] border border-[#ebebeb]">
-            <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block">Audio Quality</span>
-            <div class="text-lg font-semibold text-[#171717] mt-1">
+          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Audio Quality</span>
+            <div class="text-base font-bold text-[#141413] mt-1">
               Studio HD
             </div>
-            <span class="text-[10px] text-[#8f8f8f]">24kHz high fidelity</span>
+            <span class="text-[10px] text-[#5c5b56]">24kHz clarity</span>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#f8f8f8] border border-[#ebebeb]">
-            <span class="text-[10px] font-semibold text-[#8f8f8f] uppercase tracking-wide block">Audio Length</span>
-            <div class="text-lg font-semibold text-[#171717] mt-1">
+          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Audio Length</span>
+            <div class="text-base font-bold text-[#141413] mt-1">
               <span id="stat-duration">0.0s</span>
             </div>
-            <span class="text-[10px] text-[#8f8f8f]">Standard audio format</span>
+            <span class="text-[10px] text-[#5c5b56]">Standard audio</span>
           </div>
         </div>
 
@@ -382,8 +383,11 @@
 <script type="module" src="/pocket-client.js"></script>
 
 <style>
+  /* Ensure active dark tab never turns invisible black on hover */
   #tab-tts.bg-\[\#171717\]:hover,
-  #tab-clone.bg-\[\#171717\]:hover {
+  #tab-clone.bg-\[\#171717\]:hover,
+  #tab-tts[class*="bg-"]:hover,
+  #tab-clone[class*="bg-"]:hover {
     color: #ffffff !important;
   }
 </style>
