@@ -3,6 +3,7 @@
 @theme {
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-logo: "Space Grotesk", sans-serif;
   --color-paper: #fbf9f5;
   --color-paper-muted: #f4f0e6;
   --color-ink: #141413;

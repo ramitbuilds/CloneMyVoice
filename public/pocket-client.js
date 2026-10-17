@@ -350,6 +350,7 @@ export class PocketTTSClient {
             // Buttons
             generateBtn: document.getElementById("generate-btn"),
             stopBtn: document.getElementById("stop-btn"),
+            btnContent: document.getElementById("btn-content"),
             btnLoader: document.getElementById("btn-loader"),
             btnText: document.getElementById("btn-text"),
 
@@ -385,6 +386,7 @@ export class PocketTTSClient {
             cloneConsentCheckbox: document.getElementById("clone-consent-checkbox"),
             cloneConsentWarning: document.getElementById("clone-consent-warning"),
             saveCloneBtn: document.getElementById("save-clone-btn"),
+            saveCloneBtnContent: document.getElementById("save-clone-btn-content"),
             saveCloneBtnText: document.getElementById("save-clone-btn-text"),
             saveCloneBtnLoader: document.getElementById("save-clone-btn-loader"),
             cloneSuccessAlert: document.getElementById("clone-success-alert"),
@@ -588,7 +590,7 @@ export class PocketTTSClient {
 
     initWorker() {
         this.updateStatus("Ready", "idle");
-        this.setButtonState("ready", "Create Voice");
+        this.setButtonState("ready", "Generate Speech");
 
         this.worker = new Worker("./inference-worker.js", { type: "module" });
 
@@ -629,7 +631,7 @@ export class PocketTTSClient {
                         this.pendingGeneration = null;
                         this.startActualGeneration(pending.text, pending.voice, pending.temperature);
                     } else {
-                        this.setButtonState("ready", "Create Voice");
+                        this.setButtonState("ready", "Generate Speech");
                     }
                     break;
 
@@ -641,7 +643,7 @@ export class PocketTTSClient {
                     this.generationStartTime = performance.now();
                     this.firstChunkReceived = false;
                     this.currentGenerationChunks = [];
-                    if (this.el.statStatus) this.el.statStatus.textContent = "Making voice...";
+                    if (this.el.statStatus) this.el.statStatus.textContent = "Generating speech...";
                     break;
 
                 case "audio_chunk":
@@ -655,10 +657,13 @@ export class PocketTTSClient {
                 case "error":
                     console.error("Worker Error:", error);
                     this.updateStatus(`Error: ${error}`, "error");
-                    this.setButtonState("ready", "Create Voice");
+                    this.setButtonState("ready", "Generate Speech");
                     this.isGenerating = false;
                     if (this.el.saveCloneBtn) {
                         this.el.saveCloneBtn.disabled = false;
+                    }
+                    if (this.el.saveCloneBtnContent) {
+                        this.el.saveCloneBtnContent.classList.remove("hidden");
                     }
                     if (this.el.saveCloneBtnLoader) {
                         this.el.saveCloneBtnLoader.classList.add("hidden");
@@ -785,10 +790,10 @@ export class PocketTTSClient {
     async startActualGeneration(text, targetVoice, temperature) {
         this.isGenerating = true;
         this.currentGenerationChunks = [];
-        this.setButtonState("generating", "Making voice...");
+        this.setButtonState("generating", "Generating speech...");
         this.updateStatus("Creating audio...", "loading");
 
-        if (this.el.statStatus) this.el.statStatus.textContent = "Making voice...";
+        if (this.el.statStatus) this.el.statStatus.textContent = "Generating speech...";
         if (this.el.stopBtn) this.el.stopBtn.disabled = false;
         if (this.el.downloadBtn) this.el.downloadBtn.disabled = true;
 
@@ -813,7 +818,7 @@ export class PocketTTSClient {
             this.worker.postMessage({ type: "stop" });
         }
         this.isGenerating = false;
-        this.setButtonState("ready", "Create Voice");
+        this.setButtonState("ready", "Generate Speech");
         if (this.el.stopBtn) this.el.stopBtn.disabled = true;
         this.updateStatus("Stopped", "idle");
         if (this.el.statStatus) this.el.statStatus.textContent = "Stopped";
@@ -839,7 +844,7 @@ export class PocketTTSClient {
     // Full audio is assembled and ready to play once generation finishes completely!
     handleStreamEnd() {
         this.isGenerating = false;
-        this.setButtonState("ready", "Create Voice");
+        this.setButtonState("ready", "Generate Speech");
         if (this.el.stopBtn) this.el.stopBtn.disabled = true;
 
         if (this.currentGenerationChunks.length > 0) {
@@ -1119,7 +1124,7 @@ export class PocketTTSClient {
                 this.el.recordBtnText.textContent = "Record with Microphone";
             }
             if (this.el.micStatusText) {
-                this.el.micStatusText.textContent = "Removing background noise & cleaning voice sample...";
+                this.el.micStatusText.textContent = "Processing voice sample...";
                 this.el.micStatusText.className = "text-xs text-[#141413] font-medium";
             }
             if (this.el.recordTimer) {
@@ -1190,7 +1195,7 @@ export class PocketTTSClient {
             }
 
             if (this.el.micStatusText) {
-                this.el.micStatusText.textContent = "Background noise removed. Listen to preview and name your voice below.";
+                this.el.micStatusText.textContent = "Listen to preview and name your voice below.";
                 this.el.micStatusText.className = "text-xs text-emerald-700 font-bold";
             }
         } catch (err) {
@@ -1240,11 +1245,11 @@ export class PocketTTSClient {
         if (this.el.saveCloneBtn) {
             this.el.saveCloneBtn.disabled = true;
         }
+        if (this.el.saveCloneBtnContent) {
+            this.el.saveCloneBtnContent.classList.add("hidden");
+        }
         if (this.el.saveCloneBtnLoader) {
             this.el.saveCloneBtnLoader.classList.remove("hidden");
-        }
-        if (this.el.saveCloneBtnText) {
-            this.el.saveCloneBtnText.textContent = "Saving voice...";
         }
 
         const durationSec = this.pendingClonedAudio.length / SAMPLE_RATE;
@@ -1287,6 +1292,9 @@ export class PocketTTSClient {
         } finally {
             if (this.el.saveCloneBtn) {
                 this.el.saveCloneBtn.disabled = false;
+            }
+            if (this.el.saveCloneBtnContent) {
+                this.el.saveCloneBtnContent.classList.remove("hidden");
             }
             if (this.el.saveCloneBtnLoader) {
                 this.el.saveCloneBtnLoader.classList.add("hidden");
@@ -1430,11 +1438,14 @@ export class PocketTTSClient {
                     </button>
                     <button
                         type="button"
-                        class="delete-voice-btn px-2.5 py-1.5 text-xs text-red-600 font-bold uppercase hover:bg-red-50 border border-transparent hover:border-red-300 transition-colors cursor-pointer"
+                        class="delete-voice-btn p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 border border-neutral-300 hover:border-red-300 transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
                         data-voice-id="${v.id}"
                         title="Delete voice"
+                        aria-label="Delete voice"
                     >
-                        Delete
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                     </button>
                 </div>
             `;
@@ -1464,13 +1475,15 @@ export class PocketTTSClient {
         if (!this.el.generateBtn) return;
         if (state === "loading" || state === "generating") {
             this.el.generateBtn.disabled = true;
+            if (this.el.btnContent) this.el.btnContent.classList.add("hidden");
             if (this.el.btnLoader) this.el.btnLoader.classList.remove("hidden");
         } else {
             this.el.generateBtn.disabled = false;
+            if (this.el.btnContent) this.el.btnContent.classList.remove("hidden");
             if (this.el.btnLoader) this.el.btnLoader.classList.add("hidden");
-        }
-        if (this.el.btnText) {
-            this.el.btnText.textContent = text;
+            if (this.el.btnText) {
+                this.el.btnText.textContent = text || "Generate Speech";
+            }
         }
     }
 

@@ -8,15 +8,8 @@
     <!-- Workbench Studio Container Card -->
     <div class="bg-white border-2 border-[#141413] rebus-stamp-shadow-lg p-6 sm:p-8 relative">
 
-      <!-- Header Bar -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-[#e5e0d4] gap-4">
-        <div>
-          <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-widest block mb-0.5">Voice Maker</span>
-          <h2 class="text-lg font-bold text-[#141413] tracking-tight uppercase">
-            Text to Voice & Voice Cloning
-          </h2>
-        </div>
-
+      <!-- Header Bar: Centered Switcher Tabs -->
+      <div class="flex items-center justify-center pb-6 mb-6 border-b border-[#e5e0d4]">
         <!-- Mode Switcher Tabs (Segmented control, strictly rectangular, no pills) -->
         <div class="inline-flex p-1 bg-[#f4f0e6] border border-[#141413]">
           <button
@@ -78,37 +71,25 @@
           </div>
 
           <!-- Predefined Voice & Saved Voices -->
-          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4] flex flex-col justify-between">
-            <div>
-              <label for="voice-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
-                Choose a Voice
-              </label>
-              <select
-                id="voice-select"
-                class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
-              >
-                <optgroup label="Default Voices">
-                  <option value="alba" selected>Alba (Warm & Clear, Female)</option>
-                  <option value="marius">Marius (Natural, Male)</option>
-                  <option value="cosette">Cosette (Gentle, Female)</option>
-                  <option value="jean">Jean (Deep, Male)</option>
-                  <option value="fantine">Fantine (Soft, Female)</option>
-                  <option value="javert">Javert (Steady, Male)</option>
-                  <option value="azelma">Azelma (Bright, Female)</option>
-                  <option value="eponine">Eponine (Casual, Female)</option>
-                </optgroup>
-              </select>
-            </div>
-            <div class="flex items-center justify-between mt-2 pt-2 border-t border-[#e5e0d4] text-[11px]">
-              <span class="text-[#5c5b56]">Want your own voice?</span>
-              <button
-                type="button"
-                id="shortcut-clone-voice"
-                class="font-bold text-[#141413] hover:underline cursor-pointer flex items-center space-x-1"
-              >
-                <span>+ Clone a Voice</span>
-              </button>
-            </div>
+          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
+            <label for="voice-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
+              Choose a Voice
+            </label>
+            <select
+              id="voice-select"
+              class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
+            >
+              <optgroup label="Default Voices">
+                <option value="alba" selected>Alba (Warm & Clear, Female)</option>
+                <option value="marius">Marius (Natural, Male)</option>
+                <option value="cosette">Cosette (Gentle, Female)</option>
+                <option value="jean">Jean (Deep, Male)</option>
+                <option value="fantine">Fantine (Soft, Female)</option>
+                <option value="javert">Javert (Steady, Male)</option>
+                <option value="azelma">Azelma (Bright, Female)</option>
+                <option value="eponine">Eponine (Casual, Female)</option>
+              </optgroup>
+            </select>
           </div>
 
           <!-- Voice Tone Slider -->
@@ -129,6 +110,26 @@
               class="w-full accent-[#141413] cursor-pointer mt-2"
             />
           </div>
+        </div>
+
+        <!-- Clone Voice Prompt (Separate horizontal full-width box just below the row) -->
+        <div class="p-3.5 bg-[#fbf9f5] border border-[#e5e0d4] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-2 text-xs text-[#5c5b56]">
+            <svg class="w-4 h-4 text-[#141413] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+            </svg>
+            <span class="font-bold text-[#141413]">Want your own voice?</span>
+            <span class="text-[#5c5b56]">Record a short sample with your mic to clone any speaking voice.</span>
+          </div>
+          <button
+            type="button"
+            id="shortcut-clone-voice"
+            class="inline-flex items-center justify-center space-x-1.5 px-3.5 py-1.5 bg-white border border-[#141413] text-xs font-bold uppercase tracking-wider text-[#141413] hover:bg-[#141413] hover:text-white transition-all cursor-pointer shrink-0"
+          >
+            <span>+ Clone a Voice</span>
+          </button>
         </div>
       </div>
 
@@ -151,14 +152,6 @@
               </p>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2 shrink-0 self-start sm:self-auto">
-            <span class="text-[10px] font-bold text-[#141413] bg-[#f4f0e6] border border-[#141413] px-2 py-1 uppercase tracking-wider">
-              Noise Cleaner: Active
-            </span>
-            <span class="text-[10px] font-bold text-[#141413] bg-white border border-[#141413] px-2 py-1 uppercase tracking-wider">
-              Zero Cloud Uploads
-            </span>
-          </div>
         </div>
 
         <!-- Section 1: Microphone Recording & Live Spectrum -->
@@ -169,7 +162,7 @@
                 Step 1: Record your voice with the microphone
               </h3>
               <p class="text-xs text-[#5c5b56]">
-                Read naturally at your own pace (10 to 20 seconds). Room noise and hum are removed automatically.
+                Read naturally at your own pace (10 to 20 seconds).
               </p>
             </div>
             <span id="record-timer" class="hidden text-xs text-red-600 font-bold bg-red-50 border border-red-300 px-2.5 py-1 uppercase tracking-wider self-start sm:self-auto">
@@ -227,14 +220,9 @@
                 <span id="mic-live-dot" class="w-2.5 h-2.5 rounded-full bg-neutral-300"></span>
                 <span>Microphone Wave</span>
               </span>
-              <div class="flex items-center space-x-2">
-                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 uppercase tracking-wider">
-                  Noise Filter Ready
-                </span>
-                <span id="mic-visualizer-hint" class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider">
-                  Waiting for mic
-                </span>
-              </div>
+              <span id="mic-visualizer-hint" class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider">
+                Waiting for mic
+              </span>
             </div>
             <div class="w-full h-20 bg-[#fbf9f5] border border-[#141413] overflow-hidden relative">
               <canvas id="mic-visualizer-canvas" class="w-full h-full block"></canvas>
@@ -246,14 +234,11 @@
         <div id="clone-save-step" class="hidden p-5 bg-[#fbf9f5] border-2 border-[#141413] space-y-4 rebus-stamp-shadow-sm">
           <div class="flex items-center justify-between pb-3 border-b border-[#e5e0d4]">
             <div>
-              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-widest block mb-0.5">Clean Recording Ready</span>
               <h3 class="text-xs font-bold text-[#141413] uppercase tracking-wider">
                 Step 2: Listen & Name Your Voice
               </h3>
             </div>
-            <span id="clone-sample-duration" class="text-xs font-bold text-[#141413] px-2 py-0.5 bg-white border border-[#141413]">
-              0.0s clean sample
-            </span>
+            <span id="clone-sample-duration" class="hidden"></span>
           </div>
 
           <!-- Preview Recorded Audio -->
@@ -270,9 +255,6 @@
               Discard & Record Again
             </button>
           </div>
-          <p class="text-[11px] text-[#5c5b56] px-1">
-            Background room noise and pauses are cleaned for clear, dead-silent room quality.
-          </p>
 
           <!-- Name Your Voice Input -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -319,15 +301,17 @@
             <button
               id="save-clone-btn"
               type="button"
-              class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm flex items-center space-x-2 cursor-pointer"
+              class="relative min-w-[140px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
-              </svg>
-              <span id="save-clone-btn-text">Save Voice</span>
-              <div id="save-clone-btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
+              <span id="save-clone-btn-content" class="inline-flex items-center space-x-2">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span id="save-clone-btn-text">Save Voice</span>
+              </span>
+              <div id="save-clone-btn-loader" class="hidden w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
             </button>
           </div>
 
@@ -339,12 +323,8 @@
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </span>
-              <div>
-                <span class="text-xs font-bold uppercase tracking-wider block">Voice Saved!</span>
-                <p class="text-xs text-emerald-800">
-                  "<span id="clone-success-name">My Voice 1</span>" is saved safely on your device. You can now use it to speak any text.
-                </p>
-              </div>
+              <span class="text-xs font-bold uppercase tracking-wider">Voice Saved!</span>
+              <span id="clone-success-name" class="hidden"></span>
             </div>
             <button
               id="clone-success-cta"
@@ -441,13 +421,15 @@
           <button
             id="generate-btn"
             type="button"
-            class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center space-x-2 cursor-pointer"
+            class="relative min-w-[175px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
           >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            <span id="btn-text">Create Voice</span>
-            <div id="btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
+            <span id="btn-content" class="inline-flex items-center space-x-2">
+              <svg id="btn-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span id="btn-text">Generate Speech</span>
+            </span>
+            <div id="btn-loader" class="hidden w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
           </button>
 
           <!-- Stop Button -->
@@ -500,39 +482,11 @@
             </button>
           </div>
 
-          <!-- Performance Stats (Clean, simple, everyday vocabulary) -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Time Taken</span>
-              <div class="text-base font-bold text-[#141413] mt-1">
-                <span id="stat-ttfb">--</span> <span class="text-xs font-normal text-[#5c5b56]">ms</span>
-              </div>
-              <span class="text-[10px] text-[#5c5b56]">Instant on device</span>
-            </div>
-
-            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Speed</span>
-              <div class="text-base font-bold text-[#141413] mt-1">
-                <span id="stat-rtfx">--</span> <span class="text-xs font-normal text-[#5c5b56]">x</span>
-              </div>
-              <span class="text-[10px] text-emerald-700 font-semibold">Faster than speech</span>
-            </div>
-
-            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Sound Quality</span>
-              <div class="text-base font-bold text-[#141413] mt-1">
-                Clear HD
-              </div>
-              <span class="text-[10px] text-[#5c5b56]">Natural voice tone</span>
-            </div>
-
-            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Voice Length</span>
-              <div class="text-base font-bold text-[#141413] mt-1">
-                <span id="stat-duration">0.0s</span>
-              </div>
-              <span class="text-[10px] text-[#5c5b56]">Total audio length</span>
-            </div>
+          <!-- Hidden stats anchors for script compatibility -->
+          <div class="hidden">
+            <span id="stat-ttfb"></span>
+            <span id="stat-rtfx"></span>
+            <span id="stat-duration"></span>
           </div>
 
         </div>

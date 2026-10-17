@@ -1,32 +1,37 @@
 ---
-// Footer in Rebus editorial design style
+// Footer in Rebus editorial design style (no emojis, simple vocabulary, no responsible use disclaimer)
 ---
 
 <footer class="border-t-2 border-[#141413] bg-[#fbf9f5] py-12 text-xs text-[#5c5b56]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
     
     <!-- Main Footer Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
       <div>
-        <div class="flex items-center space-x-2 font-bold text-sm text-[#141413] mb-3 uppercase tracking-tight">
-          <div class="w-6 h-6 border border-[#141413] bg-[#141413] text-white flex items-center justify-center text-[10px] font-bold">
-            VS
+        <a href="/" class="inline-flex items-center space-x-2 text-[#141413] mb-3 group">
+          <div class="w-7 h-7 border border-[#141413] bg-[#141413] text-white flex items-center justify-center font-bold rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
+            <svg class="w-4 h-4 text-[#fbf9f5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
+            </svg>
           </div>
-          <span>Voco Speech</span>
-        </div>
-        <p class="text-xs leading-relaxed text-[#5c5b56]">
-          Fast, simple, and free speech and voice generation. Create natural voices in seconds.
+          <span class="text-lg font-extrabold tracking-tight uppercase" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em;">
+            Voco Speech
+          </span>
+        </a>
+        <p class="text-xs leading-relaxed text-[#5c5b56] max-w-sm">
+          Fast, simple, and free speech and voice generation right inside your browser.
         </p>
       </div>
 
-      <div>
+      <!-- Simple Vocabulary: Quick Links -->
+      <div class="md:text-right">
         <h4 class="font-bold text-xs text-[#141413] mb-3 uppercase tracking-wider">
-          Navigation
+          Quick Links
         </h4>
         <ul class="space-y-2 text-xs font-semibold">
           <li>
             <a href="#workbench" class="hover:text-[#141413] transition-colors">
-              Voice Maker
+              Workspace
             </a>
           </li>
           <li>
@@ -36,19 +41,10 @@
           </li>
           <li>
             <a href="#faq" class="hover:text-[#141413] transition-colors">
-              FAQ
+              FAQs
             </a>
           </li>
         </ul>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-xs text-[#141413] mb-3 uppercase tracking-wider">
-          Responsible Use
-        </h4>
-        <p class="text-xs leading-relaxed text-[#5c5b56]">
-          Use responsibly. Voice cloning requires explicit permission from the speaker. Impersonation and deceptive audio are strictly prohibited.
-        </p>
       </div>
     </div>
 

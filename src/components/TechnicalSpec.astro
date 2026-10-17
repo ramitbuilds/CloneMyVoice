@@ -1,51 +1,55 @@
 ---
-// Features section styled in Rebus design aesthetic: structured cards, SVG icons, clean numbers, no emojis, no pills
+// Features section styled as an asymmetrical Bento Grid in Rebus design aesthetic (strictly no emojis, clean SVGs, no pills)
 ---
 
 <section id="features" class="py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header with Meaningful Copy -->
     <div class="max-w-3xl mb-12">
       <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
-        Features // Voice Maker
+        // Capabilities
       </span>
       <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#141413] mb-3">
-        Simple, powerful voice tools.
+        Built for fast, natural voice creation.
       </h2>
       <p class="text-base text-[#5c5b56] leading-relaxed">
-        Everything you need to turn text into natural voice or copy any voice in seconds.
+        Generate lifelike speech, duplicate your own voice, and export crisp audio directly in your browser.
       </p>
     </div>
 
-    <!-- 4-Card Rebus Editorial Grid (Structured Cards, No Pills, No Emojis) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Bento Grid Layout: 12-Column Responsive Layout (No Pills) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
       
-      <!-- Card 01 -->
-      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+      <!-- Card 01: Wide Bento Tile (7 cols on lg, 6 on md) -->
+      <div class="md:col-span-6 lg:col-span-7 bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
         <div>
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+          <div class="flex items-center justify-between mb-6">
+            <div class="w-10 h-10 border border-[#141413] bg-[#141413] text-white flex items-center justify-center">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
               </svg>
             </div>
             <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
-              01
+              01 // SPEECH ENGINE
             </span>
           </div>
-          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+
+          <h3 class="text-xl font-bold text-[#141413] uppercase tracking-tight mb-2">
             Natural Human Tone
           </h3>
           <p class="text-sm text-[#5c5b56] leading-relaxed">
-            Clear, lifelike speech with natural pacing and emotion. Sounds like a real person speaking, never a robot.
+            Turn written text into lifelike speech with natural cadence, expressive inflection, and fluid pacing. Sounds like an authentic human speaker with clear diction.
           </p>
         </div>
       </div>
 
-      <!-- Card 02 -->
-      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+      <!-- Card 02: Medium Bento Tile (5 cols on lg, 6 on md) -->
+      <!-- Voice Cloning without mentioning background sounds/hum removal method -->
+      <div class="md:col-span-6 lg:col-span-5 bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
         <div>
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+          <div class="flex items-center justify-between mb-6">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] text-[#141413] flex items-center justify-center">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -53,23 +57,24 @@
               </svg>
             </div>
             <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
-              02
+              02 // CLONING
             </span>
           </div>
-          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+
+          <h3 class="text-xl font-bold text-[#141413] uppercase tracking-tight mb-2">
             Instant Voice Cloning
           </h3>
           <p class="text-sm text-[#5c5b56] leading-relaxed">
-            Record your voice using the microphone. Room noise and hum are removed automatically for dead-silent room quality and realistic sound.
+            Duplicate your speaking voice in seconds using a short reading sample from your microphone. Matches your cadence, timbre, and natural style.
           </p>
         </div>
       </div>
 
-      <!-- Card 03 -->
-      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+      <!-- Card 03: Bottom Bento Tile (4 cols on lg, 6 on md) -->
+      <div class="md:col-span-6 lg:col-span-4 bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] text-[#141413] flex items-center justify-center">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
@@ -77,36 +82,62 @@
               </svg>
             </div>
             <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
-              03
+              03 // MULTILINGUAL
             </span>
           </div>
+
           <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
             5 Major Languages
           </h3>
           <p class="text-sm text-[#5c5b56] leading-relaxed">
-            Create speech in English, Spanish, German, Italian, and Portuguese with authentic accents.
+            Create speech in English, Spanish, German, Italian, and Portuguese with authentic regional intonation.
           </p>
         </div>
       </div>
 
-      <!-- Card 04 -->
-      <div class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+      <!-- Card 04: Bottom Bento Tile (4 cols on lg, 6 on md) -->
+      <div class="md:col-span-6 lg:col-span-4 bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] flex items-center justify-center text-[#141413]">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] text-[#141413] flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="0" ry="0"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
+              04 // PRIVACY
+            </span>
+          </div>
+
+          <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
+            100% Device-Only
+          </h3>
+          <p class="text-sm text-[#5c5b56] leading-relaxed">
+            All audio generation and voice cloning run inside your web browser. No audio or text ever uploads to any external server.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card 05: Bottom Bento Tile (4 cols on lg, 12 on md) -->
+      <div class="md:col-span-12 lg:col-span-4 bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 border border-[#141413] bg-[#f4f0e6] text-[#141413] flex items-center justify-center">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
             <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider">
-              04
+              05 // ACCESS
             </span>
           </div>
+
           <h3 class="text-lg font-bold text-[#141413] uppercase tracking-tight mb-2">
-            100% Free & Unlimited
+            Free & Unlimited
           </h3>
           <p class="text-sm text-[#5c5b56] leading-relaxed">
-            No accounts, no credit limits, and no paid tiers. Generate as much audio as you need.
+            No accounts, no credit cards, and no usage meters. Create and download as many voice clips as you need.
           </p>
         </div>
       </div>
