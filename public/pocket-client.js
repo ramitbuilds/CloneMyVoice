@@ -1,7 +1,4 @@
-import { PCMPlayerWorklet as PCMPlayer } from "./PCMPlayerWorklet.js";
-
 const SAMPLE_RATE = 24000;
-const FADE_SAMPLES = 480;
 
 // WAV file encoder (16-bit PCM, mono)
 export function encodeWAV(samples, sampleRate = 24000) {
@@ -55,14 +52,237 @@ export async function resampleTo24kMono(audioBuffer) {
     return rendered.getChannelData(0);
 }
 
+// Audio Biquad Filter single pass helper
+function biquadPass(samples, b0, b1, b2, a1, a2) {
+    const out = new Float32Array(samples.length);
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = 0; i < samples.length; i++) {
+        const x0 = samples[i];
+        const y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+        out[i] = y0;
+        x2 = x1;
+        x1 = x0;
+        y2 = y1;
+        y1 = y0;
+    }
+    return out;
+}
+
+// Zero-phase Butterworth High-Pass Filter (eliminates DC offset, 50/60Hz AC hum, desk thumps with ZERO phase distortion)
+export function zeroPhaseHighPass(samples, sampleRate = 24000, cutoff = 80) {
+    const Q = 0.7071;
+    const omega = 2 * Math.PI * cutoff / sampleRate;
+    const alpha = Math.sin(omega) / (2 * Q);
+    const cosw = Math.cos(omega);
+
+    const b0 = (1 + cosw) / 2;
+    const b1 = -(1 + cosw);
+    const b2 = (1 + cosw) / 2;
+    const a0 = 1 + alpha;
+    const a1 = -2 * cosw;
+    const a2 = 1 - alpha;
+
+    const nb0 = b0 / a0;
+    const nb1 = b1 / a0;
+    const nb2 = b2 / a0;
+    const na1 = a1 / a0;
+    const na2 = a2 / a0;
+
+    // Forward pass
+    const fwd = biquadPass(samples, nb0, nb1, nb2, na1, na2);
+    // Backward pass
+    fwd.reverse();
+    const bwd = biquadPass(fwd, nb0, nb1, nb2, na1, na2);
+    bwd.reverse();
+    return bwd;
+}
+
+// Studio-Grade Instant Voice Cleaner & Background Noise Remover
+// 1. Zero-phase 80Hz rumble/hum elimination
+// 2. Smooth downward expander / gate for dead silence during speech pauses
+// 3. Leading and trailing room silence trimming
+// 4. Peak normalization (-1.0 dBFS)
+export function cleanVoiceAudio(samples, sampleRate = 24000) {
+    if (!samples || samples.length === 0) return samples;
+
+    // 1. High-Pass filter at 80Hz (zero-phase)
+    const hpFiltered = zeroPhaseHighPass(samples, sampleRate, 80);
+
+    // 2. RMS Energy calculation in 20ms frames
+    const frameSize = Math.floor(sampleRate * 0.02); // 480 samples @ 24k
+    const numFrames = Math.floor(hpFiltered.length / frameSize);
+    if (numFrames < 5) return hpFiltered;
+
+    const frameEnergies = new Float32Array(numFrames);
+    for (let f = 0; f < numFrames; f++) {
+        let sumSq = 0;
+        const start = f * frameSize;
+        for (let i = 0; i < frameSize; i++) {
+            const v = hpFiltered[start + i];
+            sumSq += v * v;
+        }
+        frameEnergies[f] = Math.sqrt(sumSq / frameSize);
+    }
+
+    // Estimate room noise floor from the quietest 15% of frames
+    const sortedEnergies = Float32Array.from(frameEnergies).sort();
+    const noiseFloorIdx = Math.max(0, Math.floor(numFrames * 0.15));
+    const estimatedNoiseFloor = sortedEnergies[noiseFloorIdx];
+
+    // Speech threshold: minimum energy required to be recognized as vocal phonemes
+    const speechThreshold = Math.max(0.008, estimatedNoiseFloor * 2.8);
+
+    // 3. Smooth Downward Expander (Noise Gate): Creates dead silence between spoken words without clipping
+    const gated = new Float32Array(hpFiltered.length);
+    let gain = 1.0;
+    const attackCoeff = Math.exp(-1 / (sampleRate * 0.008)); // 8ms fast attack to preserve vocal onset
+    const releaseCoeff = Math.exp(-1 / (sampleRate * 0.060)); // 60ms smooth release to prevent gating flutter
+
+    for (let f = 0; f < numFrames; f++) {
+        const energy = frameEnergies[f];
+        let targetGain = 1.0;
+        if (energy < speechThreshold) {
+            const ratio = Math.max(0, energy / speechThreshold);
+            // Attenuates down by ~26 dB in silent intervals
+            targetGain = 0.03 + 0.97 * Math.pow(ratio, 2);
+        }
+
+        const start = f * frameSize;
+        for (let i = 0; i < frameSize; i++) {
+            const coeff = targetGain > gain ? attackCoeff : releaseCoeff;
+            gain = coeff * gain + (1 - coeff) * targetGain;
+            gated[start + i] = hpFiltered[start + i] * gain;
+        }
+    }
+    for (let i = numFrames * frameSize; i < hpFiltered.length; i++) {
+        gated[i] = hpFiltered[i] * gain;
+    }
+
+    // 4. Trim leading and trailing empty silence safely
+    let trimmed = gated;
+    let startFrame = 0;
+    while (startFrame < numFrames && frameEnergies[startFrame] < speechThreshold * 1.1) {
+        startFrame++;
+    }
+    let endFrame = numFrames - 1;
+    while (endFrame > startFrame && frameEnergies[endFrame] < speechThreshold * 1.1) {
+        endFrame--;
+    }
+
+    if (startFrame < endFrame) {
+        const paddingSamples = Math.floor(sampleRate * 0.15);
+        const startIndex = Math.max(0, startFrame * frameSize - paddingSamples);
+        const endIndex = Math.min(gated.length, (endFrame + 1) * frameSize + paddingSamples);
+        if (endIndex > startIndex && endIndex - startIndex > sampleRate * 1.0) {
+            trimmed = gated.slice(startIndex, endIndex);
+        }
+    }
+
+    // 5. Peak Normalization to -1.0 dBFS (0.89) to feed optimal dynamic range into neural latent encoder
+    let maxVal = 0;
+    for (let i = 0; i < trimmed.length; i++) {
+        const abs = Math.abs(trimmed[i]);
+        if (abs > maxVal) maxVal = abs;
+    }
+
+    if (maxVal > 0.001) {
+        const scale = 0.89 / maxVal;
+        for (let i = 0; i < trimmed.length; i++) {
+            trimmed[i] *= scale;
+        }
+    }
+
+    return trimmed;
+}
+
+// Local Storage for Private Cloned Voices (IndexedDB)
+export class VoiceStorage {
+    static DB_NAME = "VocoSpeechDB";
+    static DB_VERSION = 1;
+    static STORE_NAME = "voices";
+
+    static async openDB() {
+        return new Promise((resolve, reject) => {
+            if (typeof indexedDB === "undefined") {
+                reject(new Error("IndexedDB is not supported in this browser"));
+                return;
+            }
+            const request = indexedDB.open(VoiceStorage.DB_NAME, VoiceStorage.DB_VERSION);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(VoiceStorage.STORE_NAME)) {
+                    db.createObjectStore(VoiceStorage.STORE_NAME, { keyPath: "id" });
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    static async getAllVoices() {
+        try {
+            const db = await VoiceStorage.openDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(VoiceStorage.STORE_NAME, "readonly");
+                const store = transaction.objectStore(VoiceStorage.STORE_NAME);
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const list = req.result || [];
+                    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    resolve(list);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        } catch (err) {
+            console.warn("IndexedDB getAllVoices warning:", err);
+            return [];
+        }
+    }
+
+    static async getVoice(id) {
+        try {
+            const db = await VoiceStorage.openDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(VoiceStorage.STORE_NAME, "readonly");
+                const store = transaction.objectStore(VoiceStorage.STORE_NAME);
+                const req = store.get(id);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => reject(req.error);
+            });
+        } catch (err) {
+            console.warn("IndexedDB getVoice warning:", err);
+            return null;
+        }
+    }
+
+    static async saveVoice(voiceRecord) {
+        const db = await VoiceStorage.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(VoiceStorage.STORE_NAME, "readwrite");
+            const store = transaction.objectStore(VoiceStorage.STORE_NAME);
+            const req = store.put(voiceRecord);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    static async deleteVoice(id) {
+        const db = await VoiceStorage.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(VoiceStorage.STORE_NAME, "readwrite");
+            const store = transaction.objectStore(VoiceStorage.STORE_NAME);
+            const req = store.delete(id);
+            req.onsuccess = () => resolve(true);
+            req.onerror = () => reject(req.error);
+        });
+    }
+}
+
 export class PocketTTSClient {
     constructor() {
         this.worker = null;
-        this.player = null;
-        this.audioContext = null;
         this.isGenerating = false;
         this.isWorkerReady = false;
-        this.isVoicePreparing = false;
 
         this.availableVoices = [];
         this.currentVoice = "alba";
@@ -76,25 +296,37 @@ export class PocketTTSClient {
         this.firstChunkReceived = false;
 
         // Custom cloned voice state
-        this.clonedVoiceData = null;
+        this.pendingClonedAudio = null;
+        this.pendingPreviewBlob = null;
         this.clonedVoiceAudioUrl = null;
+        this.pendingSaveVoiceData = null;
 
         // Recording state
         this.mediaRecorder = null;
+        this.mediaStream = null;
         this.recordedChunks = [];
         this.isRecording = false;
         this.recordingTimer = null;
         this.recordingSeconds = 0;
 
-        // Audio Visualizer
+        // Live Microphone Audio Visualizer
+        this.micAudioContext = null;
+        this.micSource = null;
+        this.micAnalyser = null;
+        this.micAnimFrameId = null;
+
+        // Output Audio Playback Visualizer
+        this.playbackCtx = null;
+        this.playbackAnalyser = null;
+        this.playbackSourceConnected = false;
         this.animFrameId = null;
-        this.analyser = null;
 
         this.initDomElements();
         this.attachEvents();
         this.initWorker();
         this.initVisualizer();
-        this.checkCacheSize();
+        this.initMicVisualizer();
+        this.refreshSavedVoicesList();
     }
 
     initDomElements() {
@@ -104,6 +336,8 @@ export class PocketTTSClient {
             tabClone: document.getElementById("tab-clone"),
             panelTts: document.getElementById("panel-tts"),
             panelClone: document.getElementById("panel-clone"),
+            ttsGenerationArea: document.getElementById("tts-generation-area"),
+            shortcutCloneVoice: document.getElementById("shortcut-clone-voice"),
 
             // Common Inputs
             textInput: document.getElementById("text-input"),
@@ -119,7 +353,7 @@ export class PocketTTSClient {
             btnLoader: document.getElementById("btn-loader"),
             btnText: document.getElementById("btn-text"),
 
-            // Model Loading / Progress
+            // Model Loading / Progress (Hidden background items)
             modelProgressContainer: document.getElementById("model-progress-container"),
             modelProgressBar: document.getElementById("model-progress-bar"),
             modelProgressText: document.getElementById("model-progress-text"),
@@ -135,17 +369,33 @@ export class PocketTTSClient {
 
             // Voice Cloning Elements
             recordBtn: document.getElementById("record-btn"),
+            recordBtnText: document.getElementById("record-btn-text"),
             recordTimer: document.getElementById("record-timer"),
-            voiceFileInput: document.getElementById("voice-file-input"),
-            voiceDropzone: document.getElementById("voice-dropzone"),
-            voiceFileName: document.getElementById("voice-file-name"),
-            voicePreviewPlayer: document.getElementById("voice-preview-player"),
+            micStatusText: document.getElementById("mic-status-text"),
+            micVisualizerCanvas: document.getElementById("mic-visualizer-canvas"),
+            micLiveDot: document.getElementById("mic-live-dot"),
+            micVisualizerHint: document.getElementById("mic-visualizer-hint"),
+
+            // Voice Cloning Save Step
+            cloneSaveStep: document.getElementById("clone-save-step"),
+            cloneSampleDuration: document.getElementById("clone-sample-duration"),
             voicePreviewAudio: document.getElementById("voice-preview-audio"),
+            reRecordBtn: document.getElementById("re-record-btn"),
+            cloneVoiceName: document.getElementById("clone-voice-name"),
             cloneConsentCheckbox: document.getElementById("clone-consent-checkbox"),
             cloneConsentWarning: document.getElementById("clone-consent-warning"),
-            cloneStatusBadge: document.getElementById("clone-status-badge"),
+            saveCloneBtn: document.getElementById("save-clone-btn"),
+            saveCloneBtnText: document.getElementById("save-clone-btn-text"),
+            saveCloneBtnLoader: document.getElementById("save-clone-btn-loader"),
+            cloneSuccessAlert: document.getElementById("clone-success-alert"),
+            cloneSuccessName: document.getElementById("clone-success-name"),
+            cloneSuccessCta: document.getElementById("clone-success-cta"),
 
-            // Audio Player & Visualizer
+            // Saved Voices Library
+            savedVoicesContainer: document.getElementById("saved-voices-container"),
+            savedVoicesCount: document.getElementById("saved-voices-count"),
+
+            // Audio Player & Visualizer (TTS Output)
             visualizerCanvas: document.getElementById("visualizer-canvas"),
             playBtn: document.getElementById("play-audio-btn"),
             downloadBtn: document.getElementById("download-audio-btn"),
@@ -163,6 +413,13 @@ export class PocketTTSClient {
         if (this.el.tabTts && this.el.tabClone) {
             this.el.tabTts.addEventListener("click", () => this.switchTab("tts"));
             this.el.tabClone.addEventListener("click", () => this.switchTab("clone"));
+        }
+
+        // Shortcut to switch to clone tab from TTS voice card
+        if (this.el.shortcutCloneVoice) {
+            this.el.shortcutCloneVoice.addEventListener("click", () => {
+                this.switchTab("clone");
+            });
         }
 
         // Text input character count
@@ -193,7 +450,7 @@ export class PocketTTSClient {
             this.el.languageSelect.addEventListener("change", (e) => {
                 const newLang = e.target.value;
                 if (newLang !== this.currentLanguage && this.worker) {
-                    this.updateStatus("Switching language bundle...", "loading");
+                    this.updateStatus("Changing language...", "loading");
                     this.worker.postMessage({
                         type: "set_language",
                         data: { language: newLang }
@@ -204,19 +461,35 @@ export class PocketTTSClient {
 
         // Voice Select
         if (this.el.voiceSelect) {
-            this.el.voiceSelect.addEventListener("change", (e) => {
-                const voice = e.target.value;
-                this.currentVoice = voice;
-                if (this.worker && this.isWorkerReady) {
+            this.el.voiceSelect.addEventListener("change", async (e) => {
+                const voiceId = e.target.value;
+                this.currentVoice = voiceId;
+
+                const customVoice = await VoiceStorage.getVoice(voiceId);
+                if (customVoice && this.worker && this.isWorkerReady) {
+                    let audioFloats = null;
+                    if (customVoice.audioData) {
+                        audioFloats = new Float32Array(customVoice.audioData);
+                    }
+                    this.worker.postMessage({
+                        type: "load_custom_voice",
+                        data: {
+                            voiceId: customVoice.id,
+                            voiceName: customVoice.name,
+                            embedding: customVoice.embedding,
+                            audio: audioFloats,
+                        }
+                    });
+                } else if (this.worker && this.isWorkerReady) {
                     this.worker.postMessage({
                         type: "set_voice",
-                        data: { voiceName: voice }
+                        data: { voiceName: voiceId }
                     });
                 }
             });
         }
 
-        // Temperature slider
+        // Temperature slider (Voice Tone)
         if (this.el.temperatureSlider) {
             this.el.temperatureSlider.addEventListener("input", (e) => {
                 if (this.el.temperatureVal) {
@@ -238,102 +511,89 @@ export class PocketTTSClient {
             this.el.downloadBtn.addEventListener("click", () => this.handleDownload());
         }
 
+        // Audio Player user playback listener to trigger visualizer
+        if (this.el.audioPlayback) {
+            this.el.audioPlayback.addEventListener("play", () => {
+                this.setupPlaybackVisualizer();
+                if (this.playbackCtx && this.playbackCtx.state === "suspended") {
+                    this.playbackCtx.resume();
+                }
+            });
+        }
+
         // Clear Cache
         if (this.el.clearCacheBtn) {
             this.el.clearCacheBtn.addEventListener("click", () => this.handleClearCache());
         }
 
-        // Voice Cloning: Microphone Record
+        // Voice Cloning: Microphone Record Toggle
         if (this.el.recordBtn) {
             this.el.recordBtn.addEventListener("click", () => this.toggleRecording());
         }
 
-        // Voice Cloning: File Upload & Drag and Drop
-        if (this.el.voiceFileInput) {
-            this.el.voiceFileInput.addEventListener("change", (e) => {
-                const file = e.target.files?.[0];
-                if (file) this.processVoiceFile(file);
+        // Re-record / Discard
+        if (this.el.reRecordBtn) {
+            this.el.reRecordBtn.addEventListener("click", () => this.handleDiscardRecording());
+        }
+
+        // Save Voice button
+        if (this.el.saveCloneBtn) {
+            this.el.saveCloneBtn.addEventListener("click", () => this.handleSaveClonedVoice());
+        }
+
+        // Consent checkbox
+        if (this.el.cloneConsentCheckbox) {
+            this.el.cloneConsentCheckbox.addEventListener("change", (e) => {
+                if (e.target.checked && this.el.cloneConsentWarning) {
+                    this.el.cloneConsentWarning.classList.add("hidden");
+                }
             });
         }
 
-        if (this.el.voiceDropzone) {
-            this.el.voiceDropzone.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                this.el.voiceDropzone.classList.add("border-blue-500", "bg-blue-50/20");
-            });
-            this.el.voiceDropzone.addEventListener("dragleave", () => {
-                this.el.voiceDropzone.classList.remove("border-blue-500", "bg-blue-50/20");
-            });
-            this.el.voiceDropzone.addEventListener("drop", (e) => {
-                e.preventDefault();
-                this.el.voiceDropzone.classList.remove("border-blue-500", "bg-blue-50/20");
-                const file = e.dataTransfer.files?.[0];
-                if (file) this.processVoiceFile(file);
+        // Use Voice CTA from success banner
+        if (this.el.cloneSuccessCta) {
+            this.el.cloneSuccessCta.addEventListener("click", () => {
+                this.useSavedVoiceInTTS(this.currentVoice);
             });
         }
     }
 
     switchTab(mode) {
-        const activeClasses = ["bg-[#171717]", "text-white", "shadow-xs"];
-        const inactiveClasses = ["text-[#4d4d4d]", "hover:text-[#171717]"];
+        const isTts = mode === "tts";
 
-        if (mode === "tts") {
-            this.el.tabTts.classList.remove(...inactiveClasses);
-            this.el.tabTts.classList.add(...activeClasses);
-            this.el.tabClone.classList.remove(...activeClasses);
-            this.el.tabClone.classList.add(...inactiveClasses);
-
-            this.el.panelTts.classList.remove("hidden");
-            this.el.panelClone.classList.add("hidden");
-            if (this.el.voiceSelect) {
-                if (this.currentVoice === "custom" && this.availableVoices.length > 0) {
-                    this.currentVoice = this.availableVoices[0];
-                    this.el.voiceSelect.value = this.currentVoice;
-                }
-            }
-        } else {
-            this.el.tabClone.classList.remove(...inactiveClasses);
-            this.el.tabClone.classList.add(...activeClasses);
-            this.el.tabTts.classList.remove(...activeClasses);
-            this.el.tabTts.classList.add(...inactiveClasses);
-
-            this.el.panelClone.classList.remove("hidden");
-            this.el.panelTts.classList.add("hidden");
+        if (this.el.tabTts) {
+            this.el.tabTts.classList.toggle("is-active", isTts);
         }
-    }
+        if (this.el.tabClone) {
+            this.el.tabClone.classList.toggle("is-active", !isTts);
+        }
 
-    async initAudioPlayer() {
-        if (this.player && this.audioContext) return;
+        if (isTts) {
+            this.el.panelTts?.classList.remove("hidden");
+            this.el.panelClone?.classList.add("hidden");
 
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
-                sampleRate: SAMPLE_RATE,
-                latencyHint: "interactive",
-            });
+            // Voice generator is visible ONLY on Text-to-Speech
+            this.el.ttsGenerationArea?.classList.remove("hidden");
+        } else {
+            this.el.panelClone?.classList.remove("hidden");
+            this.el.panelTts?.classList.add("hidden");
 
-            if (this.audioContext.state === "suspended") {
-                await this.audioContext.resume();
-            }
+            // Remove voice generator completely from voice cloning part
+            this.el.ttsGenerationArea?.classList.add("hidden");
 
-            this.player = new PCMPlayer(this.audioContext);
-            if (this.player.initPromise) {
-                await this.player.initPromise;
-            }
-            this.analyser = this.player.analyser;
-        } catch (err) {
-            console.warn("PCMPlayer initialization note:", err);
+            // Refresh saved voices library when switching to clone tab
+            this.refreshSavedVoicesList();
         }
     }
 
     initWorker() {
         this.updateStatus("Ready", "idle");
-        // Keep button enabled and clickable right away
-        this.setButtonState("ready", "Generate Speech");
+        this.setButtonState("ready", "Create Voice");
 
         this.worker = new Worker("./inference-worker.js", { type: "module" });
 
-        this.worker.onmessage = (e) => {
-            const { type, data, error, status, state, text, voices, defaultVoice, voiceName, language, file, percent, fromCache } = e.data;
+        this.worker.onmessage = async (e) => {
+            const { type, data, error, status, state, text, voices, defaultVoice, voiceName, language, file, percent, fromCache, voiceId, embedding } = e.data;
 
             switch (type) {
                 case "status":
@@ -353,7 +613,7 @@ export class PocketTTSClient {
 
                 case "voices_loaded":
                     this.availableVoices = voices || [];
-                    this.populateVoiceSelect(voices, defaultVoice);
+                    await this.updateVoiceDropdown(this.currentVoice || defaultVoice);
                     break;
 
                 case "bundle_loaded":
@@ -364,25 +624,24 @@ export class PocketTTSClient {
                 case "loaded":
                     this.isWorkerReady = true;
                     this.hideProgressBar();
-                    this.checkCacheSize();
                     if (this.pendingGeneration) {
                         const pending = this.pendingGeneration;
                         this.pendingGeneration = null;
                         this.startActualGeneration(pending.text, pending.voice, pending.temperature);
                     } else {
-                        this.setButtonState("ready", "Generate Speech");
+                        this.setButtonState("ready", "Create Voice");
                     }
                     break;
 
                 case "voice_encoded":
-                    this.handleVoiceClonedSuccess();
+                    await this.onVoiceEncoded({ voiceId, voiceName, embedding });
                     break;
 
                 case "generation_started":
                     this.generationStartTime = performance.now();
                     this.firstChunkReceived = false;
                     this.currentGenerationChunks = [];
-                    if (this.el.statStatus) this.el.statStatus.textContent = "Synthesizing…";
+                    if (this.el.statStatus) this.el.statStatus.textContent = "Making voice...";
                     break;
 
                 case "audio_chunk":
@@ -396,8 +655,17 @@ export class PocketTTSClient {
                 case "error":
                     console.error("Worker Error:", error);
                     this.updateStatus(`Error: ${error}`, "error");
-                    this.setButtonState("ready", "Generate Speech");
+                    this.setButtonState("ready", "Create Voice");
                     this.isGenerating = false;
+                    if (this.el.saveCloneBtn) {
+                        this.el.saveCloneBtn.disabled = false;
+                    }
+                    if (this.el.saveCloneBtnLoader) {
+                        this.el.saveCloneBtnLoader.classList.add("hidden");
+                    }
+                    if (this.el.saveCloneBtnText) {
+                        this.el.saveCloneBtnText.textContent = "Save Voice";
+                    }
                     break;
             }
         };
@@ -406,7 +674,7 @@ export class PocketTTSClient {
     }
 
     handleDownloadProgress(file, percent, fromCache) {
-        // Intentionally silent so user does not know background components are downloading
+        // Intentionally silent background fetch
     }
 
     hideProgressBar() {
@@ -415,72 +683,91 @@ export class PocketTTSClient {
         }
     }
 
-    populateVoiceSelect(voices, defaultVoice) {
+    async updateVoiceDropdown(selectedVoiceId) {
         if (!this.el.voiceSelect) return;
+
+        const savedVoices = await VoiceStorage.getAllVoices();
+        const currentVal = selectedVoiceId || this.el.voiceSelect.value || this.currentVoice || "alba";
+
         this.el.voiceSelect.innerHTML = "";
+
+        // 1. Saved Custom Voices OptGroup
+        if (savedVoices.length > 0) {
+            const customGroup = document.createElement("optgroup");
+            customGroup.label = "Your Saved Voices";
+            savedVoices.forEach((v) => {
+                const opt = document.createElement("option");
+                opt.value = v.id;
+                opt.textContent = `${v.name} (Custom)`;
+                if (v.id === currentVal) opt.selected = true;
+                customGroup.appendChild(opt);
+            });
+            this.el.voiceSelect.appendChild(customGroup);
+        }
+
+        // 2. Default Voices OptGroup
+        const standardGroup = document.createElement("optgroup");
+        standardGroup.label = "Default Voices";
 
         const voiceDescriptions = {
             alba: "Alba (Warm & Clear, Female)",
-            azelma: "Azelma (Bright & Expressive, Female)",
-            cosette: "Cosette (Gentle & Narrative, Female)",
-            eponine: "Eponine (Dynamic & Conversational, Female)",
-            fantine: "Fantine (Empathetic & Resonant, Female)",
-            javert: "Javert (Authoritative & Steady, Male)",
-            jean: "Jean (Deep & Resonant, Male)",
-            marius: "Marius (Articulate & Natural, Male)",
+            marius: "Marius (Natural, Male)",
+            cosette: "Cosette (Gentle, Female)",
+            jean: "Jean (Deep, Male)",
+            fantine: "Fantine (Soft, Female)",
+            javert: "Javert (Steady, Male)",
+            azelma: "Azelma (Bright, Female)",
+            eponine: "Eponine (Casual, Female)",
         };
 
-        voices.forEach((v) => {
+        const standardVoicesList = this.availableVoices.length > 0
+            ? this.availableVoices
+            : ["alba", "marius", "cosette", "jean", "fantine", "javert", "azelma", "eponine"];
+
+        standardVoicesList.forEach((v) => {
             const opt = document.createElement("option");
             opt.value = v;
             opt.textContent = voiceDescriptions[v] || (v.charAt(0).toUpperCase() + v.slice(1));
-            if (v === defaultVoice) opt.selected = true;
-            this.el.voiceSelect.appendChild(opt);
+            if (v === currentVal) opt.selected = true;
+            standardGroup.appendChild(opt);
         });
-
-        if (this.clonedVoiceData) {
-            const customOpt = document.createElement("option");
-            customOpt.value = "custom";
-            customOpt.textContent = "Cloned Voice (Custom)";
-            this.el.voiceSelect.appendChild(customOpt);
-        }
+        this.el.voiceSelect.appendChild(standardGroup);
     }
 
     async handleGenerate() {
         const text = this.el.textInput?.value?.trim();
         if (!text) {
-            alert("Please enter or paste text to generate speech.");
+            alert("Please type or paste some text first.");
             this.el.textInput?.focus();
             return;
         }
 
-        const isCloneMode = !this.el.panelClone?.classList.contains("hidden");
-        let targetVoice = this.currentVoice;
+        let targetVoice = this.el.voiceSelect?.value || this.currentVoice || "alba";
 
-        if (isCloneMode) {
-            if (!this.clonedVoiceData) {
-                alert("Please record or upload a voice sample first to clone a voice.");
-                return;
+        // Check if targetVoice is a saved custom voice
+        const customVoice = await VoiceStorage.getVoice(targetVoice);
+        if (customVoice && this.worker && this.isWorkerReady) {
+            let audioFloats = null;
+            if (customVoice.audioData) {
+                audioFloats = new Float32Array(customVoice.audioData);
             }
-
-            if (!this.el.cloneConsentCheckbox?.checked) {
-                if (this.el.cloneConsentWarning) {
-                    this.el.cloneConsentWarning.classList.remove("hidden");
+            this.worker.postMessage({
+                type: "load_custom_voice",
+                data: {
+                    voiceId: customVoice.id,
+                    voiceName: customVoice.name,
+                    embedding: customVoice.embedding,
+                    audio: audioFloats,
                 }
-                alert("Permission Confirmation Required: Please check the box confirming you have permission to clone this voice.");
-                this.el.cloneConsentCheckbox?.focus();
-                return;
-            }
-
-            targetVoice = "custom";
+            });
         }
 
         const temperature = parseFloat(this.el.temperatureSlider?.value || "0.7");
 
         if (!this.isWorkerReady) {
             this.pendingGeneration = { text, voice: targetVoice, temperature };
-            this.setButtonState("loading", "Preparing Voice…");
-            this.updateStatus("Preparing speech engine…", "loading");
+            this.setButtonState("loading", "Getting ready...");
+            this.updateStatus("Getting ready...", "loading");
             this.worker.postMessage({
                 type: "generate",
                 data: {
@@ -496,16 +783,19 @@ export class PocketTTSClient {
     }
 
     async startActualGeneration(text, targetVoice, temperature) {
-        await this.initAudioPlayer();
-
-        if (this.player && typeof this.player.reset === "function") {
-            this.player.reset();
-        }
-
         this.isGenerating = true;
-        this.setButtonState("generating", "Synthesizing…");
+        this.currentGenerationChunks = [];
+        this.setButtonState("generating", "Making voice...");
+        this.updateStatus("Creating audio...", "loading");
+
+        if (this.el.statStatus) this.el.statStatus.textContent = "Making voice...";
         if (this.el.stopBtn) this.el.stopBtn.disabled = false;
         if (this.el.downloadBtn) this.el.downloadBtn.disabled = true;
+
+        // Reset previous playback audio so user only hears the newly created full audio
+        if (this.el.audioPlayback) {
+            this.el.audioPlayback.pause();
+        }
 
         this.worker.postMessage({
             type: "generate",
@@ -522,45 +812,36 @@ export class PocketTTSClient {
         if (this.worker && (this.isGenerating || !this.isWorkerReady)) {
             this.worker.postMessage({ type: "stop" });
         }
-        if (this.player && typeof this.player.reset === "function") {
-            this.player.reset();
-        }
         this.isGenerating = false;
-        this.setButtonState("ready", "Generate Speech");
+        this.setButtonState("ready", "Create Voice");
         if (this.el.stopBtn) this.el.stopBtn.disabled = true;
         this.updateStatus("Stopped", "idle");
+        if (this.el.statStatus) this.el.statStatus.textContent = "Stopped";
     }
 
+    // Audio is collected silently in memory while generating.
+    // Chunks are NOT played piece-by-piece to avoid choppy premature sound!
     handleAudioChunk(float32Chunk, metrics) {
         if (!this.firstChunkReceived) {
             this.firstChunkReceived = true;
-            const ttfb = Math.round(performance.now() - this.generationStartTime);
-            if (this.el.statTTFB) this.el.statTTFB.textContent = ttfb;
+            const timeTakenMs = Math.round(performance.now() - this.generationStartTime);
+            if (this.el.statTTFB) this.el.statTTFB.textContent = timeTakenMs;
             if (this.el.ttfbBar) {
-                const pct = Math.max(5, Math.min(100, 100 - (ttfb / 10)));
+                const pct = Math.max(5, Math.min(100, 100 - (timeTakenMs / 10)));
                 this.el.ttfbBar.style.width = `${pct}%`;
             }
         }
 
-        // Keep copy for full WAV export
+        // Store chunk into the full buffer
         this.currentGenerationChunks.push(new Float32Array(float32Chunk));
-
-        // Feed to low-latency AudioWorklet player
-        if (this.player && typeof this.player.playAudio === "function") {
-            this.player.playAudio(float32Chunk);
-        }
     }
 
+    // Full audio is assembled and ready to play once generation finishes completely!
     handleStreamEnd() {
         this.isGenerating = false;
-        this.setButtonState("ready", "Generate Speech");
+        this.setButtonState("ready", "Create Voice");
         if (this.el.stopBtn) this.el.stopBtn.disabled = true;
 
-        if (this.player && typeof this.player.notifyStreamEnded === "function") {
-            this.player.notifyStreamEnded();
-        }
-
-        // Assemble full audio file for download and preview
         if (this.currentGenerationChunks.length > 0) {
             const totalLength = this.currentGenerationChunks.reduce((acc, c) => acc + c.length, 0);
             const fullFloat32 = new Float32Array(totalLength);
@@ -575,6 +856,7 @@ export class PocketTTSClient {
                 this.el.statDuration.textContent = `${durationSec.toFixed(1)}s`;
             }
 
+            // Encode complete WAV audio file
             const wavBlob = encodeWAV(fullFloat32, this.currentSampleRate);
             this.lastCompletedAudioBlob = wavBlob;
             if (this.lastCompletedAudioUrl) {
@@ -592,6 +874,9 @@ export class PocketTTSClient {
             if (this.el.downloadBtn) {
                 this.el.downloadBtn.disabled = false;
             }
+
+            this.updateStatus("Voice ready! Press play below to listen.", "idle");
+            if (this.el.statStatus) this.el.statStatus.textContent = "Ready";
         }
     }
 
@@ -600,13 +885,149 @@ export class PocketTTSClient {
         const a = document.createElement("a");
         a.href = URL.createObjectURL(this.lastCompletedAudioBlob);
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-        a.download = `clone-my-voice-${this.currentVoice}-${timestamp}.wav`;
+        a.download = `voco-voice-${this.currentVoice}-${timestamp}.wav`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
     }
 
-    // Voice Cloning: Microphone Record Toggle
+    // Connects audio element to Web Audio analyser when user plays the audio
+    setupPlaybackVisualizer() {
+        if (this.playbackSourceConnected || !this.el.audioPlayback) return;
+        try {
+            if (!this.playbackCtx) {
+                this.playbackCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const source = this.playbackCtx.createMediaElementSource(this.el.audioPlayback);
+            this.playbackAnalyser = this.playbackCtx.createAnalyser();
+            this.playbackAnalyser.fftSize = 64;
+            source.connect(this.playbackAnalyser);
+            this.playbackAnalyser.connect(this.playbackCtx.destination);
+            this.playbackSourceConnected = true;
+        } catch (e) {
+            console.warn("Playback visualizer note:", e);
+        }
+    }
+
+    // ==========================================
+    // VOICE CLONING: MICROPHONE RECORDING & SPECTRUM
+    // ==========================================
+
+    initMicVisualizer() {
+        const canvas = this.el.micVisualizerCanvas;
+        if (!canvas) return;
+
+        const resize = () => {
+            canvas.width = canvas.parentElement?.clientWidth || 600;
+            canvas.height = 80;
+            this.drawMicIdle();
+        };
+        resize();
+        window.addEventListener("resize", resize);
+    }
+
+    drawMicIdle() {
+        const canvas = this.el.micVisualizerCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw subtle static horizontal baseline
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(20, 20, 19, 0.15)";
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+    }
+
+    startMicVisualizer(stream) {
+        const canvas = this.el.micVisualizerCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        try {
+            if (!this.micAudioContext || this.micAudioContext.state === "closed") {
+                this.micAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (this.micAudioContext.state === "suspended") {
+                this.micAudioContext.resume();
+            }
+
+            this.micSource = this.micAudioContext.createMediaStreamSource(stream);
+            this.micAnalyser = this.micAudioContext.createAnalyser();
+            this.micAnalyser.fftSize = 128;
+            this.micAnalyser.smoothingTimeConstant = 0.75;
+
+            // Connect ONLY to analyser to avoid feedback!
+            this.micSource.connect(this.micAnalyser);
+
+            const bufferLength = this.micAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            if (this.el.micLiveDot) {
+                this.el.micLiveDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+            }
+            if (this.el.micVisualizerHint) {
+                this.el.micVisualizerHint.textContent = "Recording voice";
+                this.el.micVisualizerHint.className = "text-[10px] font-bold text-red-600 uppercase tracking-wider animate-pulse";
+            }
+
+            const renderFrame = () => {
+                if (!this.isRecording) {
+                    this.drawMicIdle();
+                    return;
+                }
+                this.micAnimFrameId = requestAnimationFrame(renderFrame);
+
+                this.micAnalyser.getByteFrequencyData(dataArray);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const numBars = 48;
+                const barWidth = Math.floor(canvas.width / numBars) - 2;
+                const step = Math.floor(bufferLength / numBars) || 1;
+
+                for (let i = 0; i < numBars; i++) {
+                    const val = dataArray[i * step] || 0;
+                    const percent = val / 255;
+                    const minH = 3;
+                    const barHeight = Math.max(minH, percent * (canvas.height - 10));
+                    const x = i * (barWidth + 2);
+                    const y = (canvas.height - barHeight) / 2;
+
+                    const alpha = Math.min(1, 0.25 + percent * 0.75);
+                    ctx.fillStyle = `rgba(20, 20, 19, ${alpha})`;
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                }
+            };
+
+            renderFrame();
+        } catch (err) {
+            console.warn("Could not start mic visualizer:", err);
+        }
+    }
+
+    stopMicVisualizer() {
+        if (this.micAnimFrameId) {
+            cancelAnimationFrame(this.micAnimFrameId);
+            this.micAnimFrameId = null;
+        }
+        if (this.micSource) {
+            try {
+                this.micSource.disconnect();
+            } catch (e) {}
+            this.micSource = null;
+        }
+        if (this.el.micLiveDot) {
+            this.el.micLiveDot.className = "w-2.5 h-2.5 rounded-full bg-neutral-300";
+        }
+        if (this.el.micVisualizerHint) {
+            this.el.micVisualizerHint.textContent = "Waiting for mic";
+            this.el.micVisualizerHint.className = "text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider";
+        }
+        this.drawMicIdle();
+    }
+
     async toggleRecording() {
         if (this.isRecording) {
             this.stopRecording();
@@ -617,7 +1038,14 @@ export class PocketTTSClient {
 
     async startRecording() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                channelCount: 1,
+            };
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+            this.mediaStream = stream;
             this.mediaRecorder = new MediaRecorder(stream);
             this.recordedChunks = [];
             this.recordingSeconds = 0;
@@ -629,42 +1057,51 @@ export class PocketTTSClient {
             };
 
             this.mediaRecorder.onstop = async () => {
+                this.stopMicVisualizer();
                 stream.getTracks().forEach((track) => track.stop());
                 const blob = new Blob(this.recordedChunks, { type: "audio/webm" });
-                await this.processVoiceAudioBlob(blob, "microphone-recording.webm");
+                await this.handleRecordingFinished(blob);
             };
 
             this.mediaRecorder.start();
             this.isRecording = true;
+            this.startMicVisualizer(stream);
 
             if (this.el.recordBtn) {
-                this.el.recordBtn.innerHTML = `
-                    <span class="w-3 h-3 rounded-sm bg-red-500 animate-pulse inline-block mr-2"></span>
-                    <span>Stop Recording</span>
-                `;
-                this.el.recordBtn.classList.add("border-red-500", "text-red-500");
+                this.el.recordBtn.classList.remove("bg-[#141413]", "hover:bg-neutral-800");
+                this.el.recordBtn.classList.add("bg-red-600", "hover:bg-red-700");
             }
-
+            if (this.el.recordBtnText) {
+                this.el.recordBtnText.textContent = "Stop Recording";
+            }
+            if (this.el.micStatusText) {
+                this.el.micStatusText.textContent = "Recording... Speak naturally or read the sentence, then click Stop Recording when done.";
+                this.el.micStatusText.className = "text-xs text-red-600 font-bold animate-pulse";
+            }
             if (this.el.recordTimer) {
                 this.el.recordTimer.classList.remove("hidden");
-                this.el.recordTimer.textContent = "00:00";
+                this.el.recordTimer.textContent = "00:00 / 00:30";
             }
 
             this.recordingTimer = setInterval(() => {
                 this.recordingSeconds++;
-                const mins = String(Math.floor(this.recordingSeconds / 60)).padStart(2, "0");
-                const secs = String(this.recordingSeconds % 60).padStart(2, "0");
+                const secs = String(this.recordingSeconds).padStart(2, "0");
                 if (this.el.recordTimer) {
-                    this.el.recordTimer.textContent = `${mins}:${secs}`;
+                    this.el.recordTimer.textContent = `00:${secs} / 00:30`;
                 }
-                // Cap sample at 15 seconds (ideal for zero-shot cloning)
-                if (this.recordingSeconds >= 15) {
+
+                if (this.recordingSeconds >= 10 && this.el.micStatusText) {
+                    this.el.micStatusText.textContent = "Good sample length reached. Click Stop Recording when finished.";
+                }
+
+                // Generous safety cap of 30 seconds so no one gets cut off mid-sentence
+                if (this.recordingSeconds >= 30) {
                     this.stopRecording();
                 }
             }, 1000);
         } catch (err) {
             console.error("Microphone access error:", err);
-            alert("Could not access microphone: " + err.message);
+            alert("Could not access microphone: " + err.message + "\nPlease make sure microphone permissions are granted in your browser.");
         }
     }
 
@@ -675,87 +1112,352 @@ export class PocketTTSClient {
             clearInterval(this.recordingTimer);
 
             if (this.el.recordBtn) {
-                this.el.recordBtn.innerHTML = `
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-                    <span>Record with Mic</span>
-                `;
-                this.el.recordBtn.classList.remove("border-red-500", "text-red-500");
+                this.el.recordBtn.classList.remove("bg-red-600", "hover:bg-red-700");
+                this.el.recordBtn.classList.add("bg-[#141413]", "hover:bg-neutral-800");
+            }
+            if (this.el.recordBtnText) {
+                this.el.recordBtnText.textContent = "Record with Microphone";
+            }
+            if (this.el.micStatusText) {
+                this.el.micStatusText.textContent = "Removing background noise & cleaning voice sample...";
+                this.el.micStatusText.className = "text-xs text-[#141413] font-medium";
+            }
+            if (this.el.recordTimer) {
+                this.el.recordTimer.classList.add("hidden");
             }
         }
     }
 
-    async processVoiceFile(file) {
-        if (!file.type.startsWith("audio/") && !file.name.match(/\.(wav|mp3|m4a|ogg|webm|flac)$/i)) {
-            alert("Please select a valid audio file (.wav, .mp3, .m4a, .ogg).");
-            return;
-        }
-        await this.processVoiceAudioBlob(file, file.name);
-    }
-
-    async processVoiceAudioBlob(blob, name) {
+    async handleRecordingFinished(blob) {
         try {
-            if (this.el.voiceFileName) {
-                this.el.voiceFileName.textContent = `Processing ${name}…`;
-            }
-
             const arrayBuffer = await blob.arrayBuffer();
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
             // Resample to 24000Hz mono Float32Array
-            const resampledAudio = await resampleTo24kMono(decodedBuffer);
-            this.clonedVoiceData = resampledAudio;
+            const rawAudio = await resampleTo24kMono(decodedBuffer);
 
-            // Setup preview player
-            const previewBlob = encodeWAV(resampledAudio, SAMPLE_RATE);
-            if (this.clonedVoiceAudioUrl) URL.revokeObjectURL(this.clonedVoiceAudioUrl);
+            // Instant Background Noise Remover & Acoustic Cleaner
+            // Strips room hum, fan noise, desk rumble, and silence before sending to AI encoder
+            const cleanedAudio = cleanVoiceAudio(rawAudio, SAMPLE_RATE);
+            const durationSec = cleanedAudio.length / SAMPLE_RATE;
+
+            if (durationSec < 1.0) {
+                alert("Recording was too short. Please speak for at least 2 to 3 seconds so the computer can capture your voice.");
+                if (this.el.micStatusText) {
+                    this.el.micStatusText.textContent = "Recording was too short. Please try again.";
+                    this.el.micStatusText.className = "text-xs text-amber-600 font-medium";
+                }
+                return;
+            }
+
+            this.pendingClonedAudio = cleanedAudio;
+
+            // Create preview WAV blob of the cleaned audio
+            const previewBlob = encodeWAV(cleanedAudio, SAMPLE_RATE);
+            this.pendingPreviewBlob = previewBlob;
+
+            if (this.clonedVoiceAudioUrl) {
+                URL.revokeObjectURL(this.clonedVoiceAudioUrl);
+            }
             this.clonedVoiceAudioUrl = URL.createObjectURL(previewBlob);
 
             if (this.el.voicePreviewAudio) {
                 this.el.voicePreviewAudio.src = this.clonedVoiceAudioUrl;
-            }
-            if (this.el.voicePreviewPlayer) {
-                this.el.voicePreviewPlayer.classList.remove("hidden");
-            }
-            if (this.el.voiceFileName) {
-                this.el.voiceFileName.textContent = `${name} (${(resampledAudio.length / SAMPLE_RATE).toFixed(1)}s sample ready)`;
+                this.el.voicePreviewAudio.load();
             }
 
-            // Encode voice sample in Web Worker
-            this.updateStatus("Analyzing voice sample…", "loading");
-            this.worker.postMessage({
-                type: "encode_voice",
-                data: { audio: resampledAudio }
-            });
+            if (this.el.cloneSampleDuration) {
+                this.el.cloneSampleDuration.textContent = `${durationSec.toFixed(1)}s clean sample`;
+            }
+
+            // Suggest a default voice name based on existing saved voices count
+            const allVoices = await VoiceStorage.getAllVoices();
+            const nextNum = allVoices.length + 1;
+            if (this.el.cloneVoiceName) {
+                this.el.cloneVoiceName.value = `My Voice ${nextNum}`;
+            }
+
+            // Hide success alert if previously shown
+            if (this.el.cloneSuccessAlert) {
+                this.el.cloneSuccessAlert.classList.add("hidden");
+            }
+
+            // Reveal Step 2: Listen & Name
+            if (this.el.cloneSaveStep) {
+                this.el.cloneSaveStep.classList.remove("hidden");
+                this.el.cloneSaveStep.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            if (this.el.micStatusText) {
+                this.el.micStatusText.textContent = "Background noise removed. Listen to preview and name your voice below.";
+                this.el.micStatusText.className = "text-xs text-emerald-700 font-bold";
+            }
         } catch (err) {
             console.error("Audio processing error:", err);
-            alert("Could not process audio sample: " + err.message);
-            if (this.el.voiceFileName) {
-                this.el.voiceFileName.textContent = "Error processing audio sample.";
-            }
+            alert("Could not process microphone recording: " + err.message);
         }
     }
 
-    handleVoiceClonedSuccess() {
-        this.currentVoice = "custom";
-        if (this.el.cloneStatusBadge) {
-            this.el.cloneStatusBadge.innerHTML = `
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold bg-[#f4f0e6] text-[#141413] border border-[#141413]">
-                    Voice Ready
-                </span>
-            `;
+    handleDiscardRecording() {
+        this.pendingClonedAudio = null;
+        this.pendingPreviewBlob = null;
+        if (this.clonedVoiceAudioUrl) {
+            URL.revokeObjectURL(this.clonedVoiceAudioUrl);
+            this.clonedVoiceAudioUrl = null;
         }
-        if (this.el.voiceSelect) {
-            let customOpt = this.el.voiceSelect.querySelector('option[value="custom"]');
-            if (!customOpt) {
-                customOpt = document.createElement("option");
-                customOpt.value = "custom";
-                customOpt.textContent = "Custom Cloned Voice";
-                this.el.voiceSelect.appendChild(customOpt);
+        if (this.el.voicePreviewAudio) {
+            this.el.voicePreviewAudio.pause();
+            this.el.voicePreviewAudio.removeAttribute("src");
+            this.el.voicePreviewAudio.load();
+        }
+        if (this.el.cloneSaveStep) {
+            this.el.cloneSaveStep.classList.add("hidden");
+        }
+        if (this.el.micStatusText) {
+            this.el.micStatusText.textContent = "Click record and speak anything or read the sentence.";
+            this.el.micStatusText.className = "text-xs text-[#5c5b56] font-medium";
+        }
+    }
+
+    async handleSaveClonedVoice() {
+        if (!this.pendingClonedAudio) {
+            alert("Please record your voice first.");
+            return;
+        }
+
+        // Auto-check permission if not already checked
+        if (this.el.cloneConsentCheckbox && !this.el.cloneConsentCheckbox.checked) {
+            this.el.cloneConsentCheckbox.checked = true;
+        }
+        if (this.el.cloneConsentWarning) {
+            this.el.cloneConsentWarning.classList.add("hidden");
+        }
+
+        const voiceName = this.el.cloneVoiceName?.value?.trim() || "My Voice";
+        const voiceId = "voice_" + Date.now();
+
+        if (this.el.saveCloneBtn) {
+            this.el.saveCloneBtn.disabled = true;
+        }
+        if (this.el.saveCloneBtnLoader) {
+            this.el.saveCloneBtnLoader.classList.remove("hidden");
+        }
+        if (this.el.saveCloneBtnText) {
+            this.el.saveCloneBtnText.textContent = "Saving voice...";
+        }
+
+        const durationSec = this.pendingClonedAudio.length / SAMPLE_RATE;
+
+        // Create the complete voice record immediately!
+        // We store audioData as a standard Array so IndexedDB serializes it flawlessly across all browsers
+        const saveRecord = {
+            id: voiceId,
+            name: voiceName,
+            createdAt: Date.now(),
+            duration: durationSec,
+            audioData: Array.from(this.pendingClonedAudio),
+            audioSampleBlob: this.pendingPreviewBlob || null,
+            embedding: null,
+        };
+
+        try {
+            // Save immediately into IndexedDB so the user's voice profile is never lost
+            await VoiceStorage.saveVoice(saveRecord);
+
+            // Display success alert
+            if (this.el.cloneSuccessName) {
+                this.el.cloneSuccessName.textContent = saveRecord.name;
             }
-            this.el.voiceSelect.value = "custom";
+            if (this.el.cloneSuccessAlert) {
+                this.el.cloneSuccessAlert.classList.remove("hidden");
+                this.el.cloneSuccessAlert.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            this.currentVoice = voiceId;
+
+            // Refresh Saved Voices Library and voice dropdown right away
+            await this.refreshSavedVoicesList();
+            await this.updateVoiceDropdown(this.currentVoice);
+
+            this.updateStatus(`Voice "${saveRecord.name}" saved safely on this device`, "idle");
+        } catch (storageErr) {
+            console.error("IndexedDB save error:", storageErr);
+            alert("Could not save voice to browser storage: " + storageErr.message);
+        } finally {
+            if (this.el.saveCloneBtn) {
+                this.el.saveCloneBtn.disabled = false;
+            }
+            if (this.el.saveCloneBtnLoader) {
+                this.el.saveCloneBtnLoader.classList.add("hidden");
+            }
+            if (this.el.saveCloneBtnText) {
+                this.el.saveCloneBtnText.textContent = "Save Voice";
+            }
         }
-        this.updateStatus("Voice cloned successfully", "idle");
+
+        // Send to Web Worker to encode acoustic features in the background if worker is ready
+        if (this.worker && this.isWorkerReady) {
+            this.worker.postMessage({
+                type: "encode_voice",
+                data: {
+                    audio: this.pendingClonedAudio,
+                    voiceId: voiceId,
+                    voiceName: voiceName,
+                }
+            });
+        }
+    }
+
+    async onVoiceEncoded({ voiceId, voiceName, embedding }) {
+        try {
+            const existing = await VoiceStorage.getVoice(voiceId);
+            if (existing) {
+                existing.embedding = embedding;
+                await VoiceStorage.saveVoice(existing);
+            }
+            this.updateStatus(`Voice "${voiceName}" ready for speech creation`, "idle");
+        } catch (e) {
+            console.warn("Could not update embedding in IndexedDB:", e);
+        }
+    }
+
+    async useSavedVoiceInTTS(voiceId) {
+        const voice = await VoiceStorage.getVoice(voiceId);
+        if (!voice) return;
+
+        this.currentVoice = voice.id;
+
+        // 1. Switch to TTS tab
+        this.switchTab("tts");
+
+        // 2. Select in voice dropdown
+        await this.updateVoiceDropdown(voice.id);
+        if (this.el.voiceSelect) {
+            this.el.voiceSelect.value = voice.id;
+        }
+
+        // 3. Load into worker
+        if (this.worker && this.isWorkerReady) {
+            let audioFloats = null;
+            if (voice.audioData) {
+                audioFloats = new Float32Array(voice.audioData);
+            }
+            this.worker.postMessage({
+                type: "load_custom_voice",
+                data: {
+                    voiceId: voice.id,
+                    voiceName: voice.name,
+                    embedding: voice.embedding,
+                    audio: audioFloats,
+                }
+            });
+        }
+
+        // 4. Focus text input
+        if (this.el.textInput) {
+            this.el.textInput.focus();
+            this.el.textInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    async refreshSavedVoicesList() {
+        const voices = await VoiceStorage.getAllVoices();
+        if (this.el.savedVoicesCount) {
+            this.el.savedVoicesCount.textContent = voices.length;
+        }
+
+        const container = this.el.savedVoicesContainer;
+        if (!container) return;
+
+        if (voices.length === 0) {
+            container.innerHTML = `
+                <div class="p-6 bg-[#fbf9f5] border border-[#e5e0d4] text-center text-xs text-[#5c5b56]">
+                    No custom voices saved yet. Record your voice using the microphone above to save your first private voice.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = "";
+
+        voices.forEach((v) => {
+            const card = document.createElement("div");
+            card.className = "p-4 bg-[#fbf9f5] border border-[#141413] flex flex-col md:flex-row md:items-center justify-between gap-3 rebus-stamp-shadow-sm";
+
+            const dateStr = new Date(v.createdAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+            const durationStr = v.duration ? `${Number(v.duration).toFixed(1)}s sample` : "Voice sample";
+
+            let sampleAudioUrl = null;
+            if (v.audioSampleBlob) {
+                sampleAudioUrl = URL.createObjectURL(v.audioSampleBlob);
+            }
+
+            card.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-[#141413] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="22" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">${v.name}</span>
+                            <span class="text-[10px] bg-white border border-[#141413] px-1.5 py-0.2 font-bold text-[#141413] uppercase">Private</span>
+                        </div>
+                        <span class="text-[11px] text-[#5c5b56]">${durationStr} • Stored ${dateStr}</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    ${sampleAudioUrl ? `
+                        <audio src="${sampleAudioUrl}" controls class="h-8 w-44"></audio>
+                    ` : ""}
+                    <button
+                        type="button"
+                        class="use-voice-btn px-3 py-1.5 bg-[#141413] text-white text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 transition-colors cursor-pointer border border-[#141413]"
+                        data-voice-id="${v.id}"
+                    >
+                        Use this Voice →
+                    </button>
+                    <button
+                        type="button"
+                        class="delete-voice-btn px-2.5 py-1.5 text-xs text-red-600 font-bold uppercase hover:bg-red-50 border border-transparent hover:border-red-300 transition-colors cursor-pointer"
+                        data-voice-id="${v.id}"
+                        title="Delete voice"
+                    >
+                        Delete
+                    </button>
+                </div>
+            `;
+
+            const useBtn = card.querySelector(".use-voice-btn");
+            useBtn?.addEventListener("click", () => {
+                this.useSavedVoiceInTTS(v.id);
+            });
+
+            const delBtn = card.querySelector(".delete-voice-btn");
+            delBtn?.addEventListener("click", async () => {
+                if (confirm(`Are you sure you want to delete the saved voice "${v.name}"?`)) {
+                    await VoiceStorage.deleteVoice(v.id);
+                    if (this.currentVoice === v.id) {
+                        this.currentVoice = "alba";
+                    }
+                    await this.refreshSavedVoicesList();
+                    await this.updateVoiceDropdown(this.currentVoice);
+                }
+            });
+
+            container.appendChild(card);
+        });
     }
 
     setButtonState(state, text) {
@@ -792,13 +1494,17 @@ export class PocketTTSClient {
 
         const bufferLength = 64;
         const dataArray = new Uint8Array(bufferLength);
+        let phase = 0;
 
         const render = () => {
             this.animFrameId = requestAnimationFrame(render);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (this.analyser && this.isGenerating) {
-                this.analyser.getByteFrequencyData(dataArray);
+            const isAudioPlaying = this.el.audioPlayback && !this.el.audioPlayback.paused && !this.el.audioPlayback.ended;
+
+            // When the user plays audio in the player, show real-time reacting frequency bars
+            if (this.playbackAnalyser && isAudioPlaying) {
+                this.playbackAnalyser.getByteFrequencyData(dataArray);
 
                 const barWidth = (canvas.width / bufferLength) * 1.5;
                 let x = 0;
@@ -810,10 +1516,22 @@ export class PocketTTSClient {
                     ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
                     x += barWidth;
                 }
-            } else {
-                // Subtle idle pulse line
+            } else if (this.isGenerating) {
+                // Smooth sine wave animation showing audio is actively being generated
+                phase += 0.08;
                 ctx.beginPath();
-                ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+                ctx.strokeStyle = "rgba(23, 23, 23, 0.7)";
+                ctx.lineWidth = 2;
+                for (let x = 0; x < canvas.width; x += 4) {
+                    const y = (canvas.height / 2) + Math.sin((x * 0.03) + phase) * 12 * Math.sin(phase * 0.5);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            } else {
+                // Static subtle resting baseline
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
                 ctx.lineWidth = 1;
                 ctx.moveTo(0, canvas.height / 2);
                 ctx.lineTo(canvas.width, canvas.height / 2);
@@ -821,10 +1539,6 @@ export class PocketTTSClient {
             }
         };
         render();
-    }
-
-    async checkCacheSize() {
-        // Cache diagnostics removed from UI
     }
 
     async handleClearCache() {

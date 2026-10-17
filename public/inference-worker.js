@@ -43,6 +43,7 @@ let currentMaxTokenPerChunk = 50;
 
 let predefinedVoiceRecords = {};
 let customVoiceEmbedding = null;
+const customVoicesEmbeddings = new Map();
 let currentVoiceName = null;
 let voiceConditioningCache = new Map();
 
@@ -372,18 +373,22 @@ async function ensurePredefinedVoiceCached(voiceName, options = {}) {
 }
 
 async function ensureCustomVoiceCached(options = {}) {
-    const { force = false, statusText = "Preparing custom cloned voice..." } = options;
-    if (!customVoiceEmbedding) {
-        throw new Error("No custom voice loaded. Please record or upload an audio sample first.");
+    const { voiceId = "custom", embedding = null, force = false, statusText = "Preparing custom cloned voice..." } = options;
+    if (embedding) {
+        customVoicesEmbeddings.set(voiceId, embedding);
+    }
+    const voiceEmb = customVoicesEmbeddings.get(voiceId) || customVoiceEmbedding;
+    if (!voiceEmb) {
+        throw new Error(`No custom voice loaded for voice ID: ${voiceId}.`);
     }
 
-    if (!force && voiceConditioningCache.has("custom")) {
-        return voiceConditioningCache.get("custom");
+    if (!force && voiceConditioningCache.has(voiceId)) {
+        return voiceConditioningCache.get(voiceId);
     }
 
     postMessage({ type: "status", status: statusText, state: "loading" });
-    const conditioned = await buildVoiceConditionedState(customVoiceEmbedding);
-    voiceConditioningCache.set("custom", conditioned);
+    const conditioned = await buildVoiceConditionedState(voiceEmb);
+    voiceConditioningCache.set(voiceId, conditioned);
     return conditioned;
 }
 
@@ -836,12 +841,53 @@ self.onmessage = async (e) => {
                 postMessage({ type: "error", error: "Cannot clone voice while speech generation is active." });
                 return;
             }
-            postMessage({ type: "status", status: "Processing voice sample...", state: "loading" });
-            customVoiceEmbedding = await encodeVoiceAudio(data.audio);
-            currentVoiceName = "custom";
-            await ensureCustomVoiceCached({ force: true, statusText: "Finalizing cloned voice..." });
-            postMessage({ type: "voice_encoded", voiceName: "custom" });
-            postMessage({ type: "status", status: "Voice cloned successfully", state: "idle" });
+            postMessage({ type: "status", status: "Analyzing voice sample...", state: "loading" });
+            const embedding = await encodeVoiceAudio(data.audio);
+            const voiceId = data.voiceId || "custom";
+            customVoicesEmbeddings.set(voiceId, embedding);
+            customVoiceEmbedding = embedding;
+            currentVoiceName = voiceId;
+            await ensureCustomVoiceCached({
+                voiceId,
+                embedding,
+                force: true,
+                statusText: "Finalizing cloned voice..."
+            });
+            postMessage({
+                type: "voice_encoded",
+                voiceId: voiceId,
+                voiceName: data.voiceName || "My Cloned Voice",
+                embedding: {
+                    data: embedding.data,
+                    shape: embedding.shape,
+                }
+            });
+            postMessage({ type: "status", status: "Voice cloned and ready", state: "idle" });
+            return;
+        }
+
+        if (type === "load_custom_voice") {
+            const { voiceId, voiceName, embedding, audio } = data;
+            let emb = embedding;
+            if (!emb && audio) {
+                emb = await encodeVoiceAudio(audio);
+            }
+            if (emb) {
+                if (!(emb.data instanceof Float32Array)) {
+                    emb.data = new Float32Array(emb.data);
+                }
+                customVoicesEmbeddings.set(voiceId, emb);
+                customVoiceEmbedding = emb;
+                await ensureCustomVoiceCached({
+                    voiceId,
+                    embedding: emb,
+                    force: false,
+                    statusText: `Preparing voice (${voiceName || voiceId})...`
+                });
+            }
+            currentVoiceName = voiceId;
+            postMessage({ type: "voice_set", voiceName: currentVoiceName });
+            postMessage({ type: "status", status: "Ready", state: "idle" });
             return;
         }
 
@@ -850,14 +896,15 @@ self.onmessage = async (e) => {
                 postMessage({ type: "error", error: "Cannot switch voice during generation." });
                 return;
             }
-            if (data.voiceName === "custom") {
-                await ensureCustomVoiceCached({ statusText: "Preparing custom voice..." });
-                currentVoiceName = "custom";
+            const vName = data.voiceName;
+            if (vName === "custom" || vName.startsWith("voice_") || customVoicesEmbeddings.has(vName)) {
+                await ensureCustomVoiceCached({ voiceId: vName, statusText: "Preparing custom voice..." });
+                currentVoiceName = vName;
             } else {
-                await ensurePredefinedVoiceCached(data.voiceName, {
-                    statusText: `Preparing voice (${data.voiceName})...`,
+                await ensurePredefinedVoiceCached(vName, {
+                    statusText: `Preparing voice (${vName})...`,
                 });
-                currentVoiceName = data.voiceName;
+                currentVoiceName = vName;
             }
             postMessage({ type: "voice_set", voiceName: currentVoiceName });
             postMessage({ type: "status", status: "Ready", state: "idle" });
@@ -880,8 +927,8 @@ async function startGeneration(text, voiceName, temperature = 0.7) {
             throw new Error("No text provided for speech synthesis.");
         }
 
-        if (voiceName === "custom") {
-            await ensureCustomVoiceCached({ statusText: "Preparing custom voice..." });
+        if (voiceName === "custom" || voiceName.startsWith("voice_") || customVoicesEmbeddings.has(voiceName)) {
+            await ensureCustomVoiceCached({ voiceId: voiceName, statusText: "Preparing custom voice..." });
         } else {
             await ensurePredefinedVoiceCached(voiceName, {
                 statusText: `Preparing voice (${voiceName})...`,
@@ -913,7 +960,7 @@ async function runGenerationPipeline(voiceName, chunks, framesAfterEos, temperat
     let flowLmState = cloneState(baseFlowState);
 
     const firstChunkFrames = 3;
-    const normalChunkFrames = 12;
+    const normalChunkFrames = 8;
     const allGeneratedLatents = [];
     let isFirstAudioChunk = true;
     let totalFlowLmTime = 0;
@@ -944,12 +991,17 @@ async function runGenerationPipeline(voiceName, chunks, framesAfterEos, temperat
             textEmb = createTensor("float32", new Float32Array(textEmb.data), [1, textEmb.dims[0], textEmb.dims[1]]);
         }
 
-        const condResult = await flowLmMainSession.run({
+        const flowLmFeeds = {
             sequence: emptySeq,
             text_embeddings: textEmb,
             ...flowLmState,
-        });
+        };
+        const condResult = await flowLmMainSession.run(flowLmFeeds);
         updateStateFromManifestOutputs(flowLmState, condResult, bundleMetadata.flow_lm_state_manifest);
+        for (const entry of bundleMetadata.flow_lm_state_manifest) {
+            flowLmFeeds[entry.input_name] = condResult[entry.output_name];
+        }
+        flowLmFeeds.text_embeddings = emptyTextEmb;
 
         const chunkLatents = [];
         let chunkDecodedFrames = 0;
@@ -960,19 +1012,22 @@ async function runGenerationPipeline(voiceName, chunks, framesAfterEos, temperat
 
         for (let step = 0; step < MAX_FRAMES; step++) {
             if (!isGenerating) break;
-            if (step > 0 && step % 4 === 0) {
+            if (step > 0 && step % 12 === 0) {
                 await new Promise((resolve) => setTimeout(resolve, 0));
             }
 
             const stepStart = performance.now();
-            const arResult = await flowLmMainSession.run({
-                sequence: currentLatent,
-                text_embeddings: emptyTextEmb,
-                ...flowLmState,
-            });
+            flowLmFeeds.sequence = currentLatent;
+            const arResult = await flowLmMainSession.run(flowLmFeeds);
             const stepElapsed = performance.now() - stepStart;
             chunkGenTimeMs += stepElapsed;
             totalFlowLmTime += stepElapsed;
+
+            for (const entry of bundleMetadata.flow_lm_state_manifest) {
+                const val = arResult[entry.output_name];
+                flowLmState[entry.input_name] = val;
+                flowLmFeeds[entry.input_name] = val;
+            }
 
             const conditioning = arResult.conditioning;
             const eosLogit = arResult.eos_logit.data[0];
@@ -984,12 +1039,15 @@ async function runGenerationPipeline(voiceName, chunks, framesAfterEos, temperat
 
             const std = Math.sqrt(Math.max(0.01, temperature));
             const latentData = new Float32Array(currentLatentDim);
-            for (let i = 0; i < currentLatentDim; i++) {
-                let u = 0;
-                let v = 0;
+            for (let i = 0; i < currentLatentDim; i += 2) {
+                let u = Math.random();
                 while (u === 0) u = Math.random();
-                while (v === 0) v = Math.random();
-                latentData[i] = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v) * std;
+                const v = Math.random() * 2.0 * Math.PI;
+                const r = Math.sqrt(-2.0 * Math.log(u)) * std;
+                latentData[i] = r * Math.cos(v);
+                if (i + 1 < currentLatentDim) {
+                    latentData[i + 1] = r * Math.sin(v);
+                }
             }
 
             const dt = 1.0 / LSD_STEPS;
@@ -1009,7 +1067,6 @@ async function runGenerationPipeline(voiceName, chunks, framesAfterEos, temperat
             chunkLatents.push(new Float32Array(latentData));
             allGeneratedLatents.push(new Float32Array(latentData));
             currentLatent = createTensor("float32", latentData, [1, 1, currentLatentDim]);
-            updateStateFromManifestOutputs(flowLmState, arResult, bundleMetadata.flow_lm_state_manifest);
 
             const pending = chunkLatents.length - chunkDecodedFrames;
             let decodeSize = 0;

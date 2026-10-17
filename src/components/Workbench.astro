@@ -11,9 +11,9 @@
       <!-- Header Bar -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-[#e5e0d4] gap-4">
         <div>
-          <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-widest block mb-0.5">Studio</span>
+          <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-widest block mb-0.5">Voice Maker</span>
           <h2 class="text-lg font-bold text-[#141413] tracking-tight uppercase">
-            Speech & Voice Generator
+            Text to Voice & Voice Cloning
           </h2>
         </div>
 
@@ -22,7 +22,7 @@
           <button
             id="tab-tts"
             type="button"
-            class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-[#171717] text-white hover:text-white transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-[#141413] cursor-pointer"
+            class="is-active px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-[#171717] text-white transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-[#141413] cursor-pointer"
           >
             <span class="inline-flex items-center space-x-2">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -77,31 +77,45 @@
             </select>
           </div>
 
-          <!-- Predefined Voice -->
-          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
-            <label for="voice-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
-              Voice
-            </label>
-            <select
-              id="voice-select"
-              class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
-            >
-              <option value="alba" selected>Alba (Warm & Clear, Female)</option>
-              <option value="marius">Marius (Articulate & Natural, Male)</option>
-              <option value="cosette">Cosette (Gentle & Narrative, Female)</option>
-              <option value="jean">Jean (Deep & Resonant, Male)</option>
-              <option value="fantine">Fantine (Empathetic & Resonant, Female)</option>
-              <option value="javert">Javert (Authoritative & Measured, Male)</option>
-              <option value="azelma">Azelma (Bright & Expressive, Female)</option>
-              <option value="eponine">Eponine (Dynamic & Conversational, Female)</option>
-            </select>
+          <!-- Predefined Voice & Saved Voices -->
+          <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4] flex flex-col justify-between">
+            <div>
+              <label for="voice-select" class="block text-xs font-bold text-[#141413] mb-2 uppercase tracking-wider">
+                Choose a Voice
+              </label>
+              <select
+                id="voice-select"
+                class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
+              >
+                <optgroup label="Default Voices">
+                  <option value="alba" selected>Alba (Warm & Clear, Female)</option>
+                  <option value="marius">Marius (Natural, Male)</option>
+                  <option value="cosette">Cosette (Gentle, Female)</option>
+                  <option value="jean">Jean (Deep, Male)</option>
+                  <option value="fantine">Fantine (Soft, Female)</option>
+                  <option value="javert">Javert (Steady, Male)</option>
+                  <option value="azelma">Azelma (Bright, Female)</option>
+                  <option value="eponine">Eponine (Casual, Female)</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-[#e5e0d4] text-[11px]">
+              <span class="text-[#5c5b56]">Want your own voice?</span>
+              <button
+                type="button"
+                id="shortcut-clone-voice"
+                class="font-bold text-[#141413] hover:underline cursor-pointer flex items-center space-x-1"
+              >
+                <span>+ Clone a Voice</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Expressiveness Slider -->
+          <!-- Voice Tone Slider -->
           <div class="p-4 bg-[#fbf9f5] border border-[#e5e0d4]">
             <div class="flex items-center justify-between mb-2">
               <label for="temperature-slider" class="text-xs font-bold text-[#141413] uppercase tracking-wider">
-                Expressiveness
+                Voice Tone
               </label>
               <span id="temperature-val" class="text-xs font-bold text-[#141413] px-1.5 py-0.5 bg-white border border-[#141413]">0.70</span>
             </div>
@@ -118,258 +132,409 @@
         </div>
       </div>
 
-      <!-- PANEL 2: AI Voice Cloning Settings -->
+      <!-- PANEL 2: AI Voice Cloning & Private Library -->
       <div id="panel-clone" class="hidden space-y-6">
-        <div class="p-5 bg-[#fbf9f5] border border-[#141413]">
-          <h3 class="text-xs font-bold text-[#141413] uppercase tracking-wider mb-1">
-            Step 1: Add Audio Sample (3–15 seconds)
-          </h3>
-          <p class="text-xs text-[#5c5b56] mb-4">
-            Record a short sample or upload an audio file to duplicate this voice.
-          </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Option A: Record with Mic -->
-            <div class="p-4 bg-white border border-[#141413] flex flex-col justify-between rebus-stamp-shadow-sm">
-              <div>
-                <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block mb-1">Method A</span>
-                <h4 class="text-xs font-bold text-[#141413] mb-1">Record with Microphone</h4>
-                <p class="text-xs text-[#5c5b56] mb-4">
-                  Speak clearly into your microphone for 5 to 10 seconds.
-                </p>
-              </div>
-
-              <div class="flex items-center space-x-3">
-                <button
-                  id="record-btn"
-                  type="button"
-                  class="inline-flex items-center px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-                >
-                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                    <line x1="12" y1="19" x2="12" y2="22" />
-                  </svg>
-                  <span>Record Mic</span>
-                </button>
-                <span id="record-timer" class="hidden text-xs text-red-600 font-bold animate-pulse">00:00</span>
-              </div>
-            </div>
-
-            <!-- Option B: Upload Audio File -->
-            <div
-              id="voice-dropzone"
-              class="p-4 bg-white border border-dashed border-[#141413] hover:border-black transition-colors flex flex-col justify-between"
-            >
-              <div>
-                <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block mb-1">Method B</span>
-                <h4 class="text-xs font-bold text-[#141413] mb-1">Upload Audio File (.wav, .mp3)</h4>
-                <p class="text-xs text-[#5c5b56] mb-4" id="voice-file-name">
-                  Drop audio clip here or choose file
-                </p>
-              </div>
-
-              <div>
-                <input type="file" id="voice-file-input" accept="audio/*" class="hidden" />
-                <button
-                  type="button"
-                  onclick="document.getElementById('voice-file-input').click()"
-                  class="inline-flex items-center px-3.5 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#f4f0e6] text-[#141413] hover:bg-[#e8e2d4] transition-colors cursor-pointer"
-                >
-                  <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <span>Select File</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Preview Player for Cloned Sample -->
-          <div id="voice-preview-player" class="hidden mt-4 pt-4 border-t border-[#e5e0d4] flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center space-x-3">
-              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Preview Sample:</span>
-              <audio id="voice-preview-audio" controls class="h-8 max-w-[240px]"></audio>
-            </div>
-            <div id="clone-status-badge" class="text-xs font-bold text-[#5c5b56]">
-              Awaiting sample…
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 2: Ethical Voice Permission Confirmation -->
-        <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
-          <div class="flex items-start space-x-3">
-            <input
-              id="clone-consent-checkbox"
-              type="checkbox"
-              class="mt-1 w-4 h-4 text-[#141413] rounded-none border-[#141413] focus:ring-[#141413] cursor-pointer"
-            />
-            <label for="clone-consent-checkbox" class="text-xs text-[#5c5b56] leading-relaxed cursor-pointer select-none">
-              <strong class="text-[#141413] font-bold">Permission Confirmation:</strong>
-              I confirm that I have permission from the speaker to use this voice, and will not use it to impersonate or mislead anyone.
-            </label>
-          </div>
-          <p id="clone-consent-warning" class="hidden text-xs text-red-600 font-bold mt-2 pl-7">
-            You must check this box to confirm permission before generating speech.
-          </p>
-        </div>
-      </div>
-
-      <!-- Text Input Area -->
-      <div class="mt-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <label for="text-input" class="text-xs font-bold text-[#141413] uppercase tracking-wider">
-            Text to Speak
-          </label>
-          <span class="text-xs font-medium text-[#5c5b56]">
-            <span id="char-count" class="font-bold text-[#141413]">78</span> characters
-          </span>
-        </div>
-
-        <div class="relative">
-          <textarea
-            id="text-input"
-            rows="4"
-            class="w-full p-4 bg-[#fbf9f5] border border-[#141413] text-sm text-[#141413] placeholder-[#96948c] focus-visible:ring-2 focus-visible:ring-[#141413] resize-y leading-relaxed font-medium"
-            placeholder="Type or paste any text to turn into speech…"
-          >Welcome! Type or paste any text here to turn it into clear, natural speech.</textarea>
-        </div>
-
-        <!-- Sample Presets (No Pills) -->
-        <div class="flex flex-wrap items-center gap-2 pt-1">
-          <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider mr-1">Sample text:</span>
-          <button
-            type="button"
-            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
-            data-text="Welcome! Type or paste any text here to turn it into clear, natural speech."
-          >
-            Welcome
-          </button>
-          <button
-            type="button"
-            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
-            data-text="Thank you for reaching out today. I am happy to help you with your question."
-          >
-            Support
-          </button>
-          <button
-            type="button"
-            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
-            data-text="The sun was setting behind the hills, casting a warm golden glow across the quiet valley."
-          >
-            Story
-          </button>
-          <button
-            type="button"
-            class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
-            data-text="In this quick tutorial, you will learn how to create high quality audio in seconds."
-          >
-            Tutorial
-          </button>
-        </div>
-      </div>
-
-      <!-- Action Buttons (No Pills) -->
-      <div class="mt-8 flex items-center space-x-3">
-        <!-- CTA button -->
-        <button
-          id="generate-btn"
-          type="button"
-          class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center space-x-2 cursor-pointer"
-        >
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          <span id="btn-text">Generate Speech</span>
-          <div id="btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
-        </button>
-
-        <!-- Stop Button -->
-        <button
-          id="stop-btn"
-          type="button"
-          disabled
-          class="px-4 py-2.5 border border-[#e5e0d4] text-xs font-bold uppercase tracking-wider bg-transparent text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Stop
-        </button>
-      </div>
-
-      <!-- Output Section: Spectrum Visualizer, Audio Player & Download -->
-      <div class="mt-8 pt-8 border-t border-[#e5e0d4] space-y-6">
         
-        <!-- Audio Visualizer Canvas -->
-        <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
-          <div class="flex items-center justify-between mb-3 text-xs">
-            <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Audio Waveform Spectrum</span>
-            <div class="flex items-center space-x-2">
-              <span class="w-2 h-2 bg-emerald-500"></span>
-              <span id="stat-status" class="text-xs font-bold text-[#141413] uppercase tracking-wider">Ready</span>
+        <!-- Privacy Guarantee Banner -->
+        <div class="p-4 bg-[#f4f0e6] border-2 border-[#141413] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-[#141413] text-white flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="0" ry="0"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider block">100% Private & Device-Only</span>
+              <p class="text-xs text-[#5c5b56]">
+                Cloned voices are stored privately in your browser. Your voice data never leaves your device or touches any server.
+              </p>
             </div>
           </div>
-          <div class="w-full h-20 bg-white border border-[#141413] overflow-hidden relative">
-            <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+          <div class="flex flex-wrap gap-2 shrink-0 self-start sm:self-auto">
+            <span class="text-[10px] font-bold text-[#141413] bg-[#f4f0e6] border border-[#141413] px-2 py-1 uppercase tracking-wider">
+              Noise Cleaner: Active
+            </span>
+            <span class="text-[10px] font-bold text-[#141413] bg-white border border-[#141413] px-2 py-1 uppercase tracking-wider">
+              Zero Cloud Uploads
+            </span>
           </div>
         </div>
 
-        <!-- Audio Player & Download Button -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-white border border-[#141413] rebus-stamp-shadow-sm">
-          <div class="flex items-center space-x-3 w-full sm:w-auto">
-            <audio id="audio-playback" controls class="w-full sm:w-80 h-10"></audio>
-            <span id="audio-duration-text" class="text-xs font-bold text-[#5c5b56] whitespace-nowrap">0.0s</span>
+        <!-- Section 1: Microphone Recording & Live Spectrum -->
+        <div class="p-5 bg-[#fbf9f5] border border-[#141413] space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-[#141413] uppercase tracking-wider">
+                Step 1: Record your voice with the microphone
+              </h3>
+              <p class="text-xs text-[#5c5b56]">
+                Read naturally at your own pace (10 to 20 seconds). Room noise and hum are removed automatically.
+              </p>
+            </div>
+            <span id="record-timer" class="hidden text-xs text-red-600 font-bold bg-red-50 border border-red-300 px-2.5 py-1 uppercase tracking-wider self-start sm:self-auto">
+              00:00 / 00:30
+            </span>
           </div>
 
+          <!-- Practice Sentence Box -->
+          <div class="p-4 bg-[#f4f0e6] border border-[#141413]">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider flex items-center space-x-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <span>Suggested Sentence (Or Speak Anything You Want)</span>
+              </span>
+              <span class="text-[10px] font-bold text-[#5c5b56] bg-white border border-[#141413] px-2 py-0.5 uppercase tracking-wider">
+                Optional
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm font-medium text-[#141413] leading-relaxed italic bg-white p-3.5 border border-[#141413]">
+              "When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors."
+            </p>
+            <p class="text-[11px] text-[#5c5b56] mt-2">
+              You can speak anything you want, or read this sentence if you need something quick to say. Both work great.
+            </p>
+          </div>
+
+          <!-- Microphone Action Bar -->
+          <div class="p-4 bg-white border border-[#141413] flex flex-col sm:flex-row sm:items-center justify-between gap-4 rebus-stamp-shadow-sm">
+            <div class="flex items-center space-x-3">
+              <button
+                id="record-btn"
+                type="button"
+                class="inline-flex items-center px-5 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="22" />
+                </svg>
+                <span id="record-btn-text">Record with Microphone</span>
+              </button>
+            </div>
+            <p id="mic-status-text" class="text-xs text-[#5c5b56] font-medium">
+              Click record and speak anything or read the sentence.
+            </p>
+          </div>
+
+          <!-- Live Mic Audio Spectrum Visualizer -->
+          <div class="p-4 bg-white border border-[#141413]">
+            <div class="flex items-center justify-between mb-2 text-xs">
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider flex items-center space-x-2">
+                <span id="mic-live-dot" class="w-2.5 h-2.5 rounded-full bg-neutral-300"></span>
+                <span>Microphone Wave</span>
+              </span>
+              <div class="flex items-center space-x-2">
+                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 uppercase tracking-wider">
+                  Noise Filter Ready
+                </span>
+                <span id="mic-visualizer-hint" class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider">
+                  Waiting for mic
+                </span>
+              </div>
+            </div>
+            <div class="w-full h-20 bg-[#fbf9f5] border border-[#141413] overflow-hidden relative">
+              <canvas id="mic-visualizer-canvas" class="w-full h-full block"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Name & Save Cloned Voice (Visible after recording completes!) -->
+        <div id="clone-save-step" class="hidden p-5 bg-[#fbf9f5] border-2 border-[#141413] space-y-4 rebus-stamp-shadow-sm">
+          <div class="flex items-center justify-between pb-3 border-b border-[#e5e0d4]">
+            <div>
+              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-widest block mb-0.5">Clean Recording Ready</span>
+              <h3 class="text-xs font-bold text-[#141413] uppercase tracking-wider">
+                Step 2: Listen & Name Your Voice
+              </h3>
+            </div>
+            <span id="clone-sample-duration" class="text-xs font-bold text-[#141413] px-2 py-0.5 bg-white border border-[#141413]">
+              0.0s clean sample
+            </span>
+          </div>
+
+          <!-- Preview Recorded Audio -->
+          <div class="p-4 bg-white border border-[#141413] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 w-full sm:w-auto">
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Preview:</span>
+              <audio id="voice-preview-audio" controls class="h-9 w-full sm:w-72"></audio>
+            </div>
+            <button
+              id="re-record-btn"
+              type="button"
+              class="text-xs font-bold uppercase tracking-wider text-[#5c5b56] hover:text-[#141413] underline cursor-pointer"
+            >
+              Discard & Record Again
+            </button>
+          </div>
+          <p class="text-[11px] text-[#5c5b56] px-1">
+            Background room noise and pauses are cleaned for clear, dead-silent room quality.
+          </p>
+
+          <!-- Name Your Voice Input -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="clone-voice-name" class="block text-xs font-bold text-[#141413] uppercase tracking-wider mb-2">
+                Name Your Voice
+              </label>
+              <input
+                id="clone-voice-name"
+                type="text"
+                value="My Voice 1"
+                placeholder="e.g. My Voice, Personal Narrator"
+                class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#141413] text-[#141413] font-medium focus-visible:ring-2 focus-visible:ring-[#141413]"
+              />
+            </div>
+            <div class="flex flex-col justify-end">
+              <p class="text-[11px] text-[#5c5b56] leading-relaxed">
+                Choose a name so you can easily pick this voice from the Voice menu.
+              </p>
+            </div>
+          </div>
+
+          <!-- Ethical Permission Confirmation -->
+          <div class="p-3.5 bg-white border border-[#e5e0d4]">
+            <div class="flex items-start space-x-3">
+              <input
+                id="clone-consent-checkbox"
+                type="checkbox"
+                checked
+                class="mt-0.5 w-4 h-4 text-[#141413] rounded-none border-[#141413] focus:ring-[#141413] cursor-pointer"
+              />
+              <label for="clone-consent-checkbox" class="text-xs text-[#5c5b56] leading-relaxed cursor-pointer select-none">
+                <strong class="text-[#141413] font-bold">Permission:</strong>
+                I confirm that I have permission from the speaker to use this voice, and will not use it to mislead anyone.
+              </label>
+            </div>
+            <p id="clone-consent-warning" class="hidden text-xs text-red-600 font-bold mt-2 pl-7">
+              You must check this box to confirm permission before saving.
+            </p>
+          </div>
+
+          <!-- Save Button -->
+          <div class="pt-2 flex items-center space-x-3">
+            <button
+              id="save-clone-btn"
+              type="button"
+              class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm flex items-center space-x-2 cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span id="save-clone-btn-text">Save Voice</span>
+              <div id="save-clone-btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
+            </button>
+          </div>
+
+          <!-- Success Banner (hidden by default) -->
+          <div id="clone-success-alert" class="hidden p-4 bg-emerald-50 border-2 border-emerald-600 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+              <span class="w-5 h-5 bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider block">Voice Saved!</span>
+                <p class="text-xs text-emerald-800">
+                  "<span id="clone-success-name">My Voice 1</span>" is saved safely on your device. You can now use it to speak any text.
+                </p>
+              </div>
+            </div>
+            <button
+              id="clone-success-cta"
+              type="button"
+              class="px-4 py-2 bg-[#141413] text-white text-xs font-bold uppercase tracking-wider border border-[#141413] hover:bg-neutral-800 transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
+            >
+              Use this Voice →
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3: Saved Voices Library -->
+        <div class="p-5 bg-white border border-[#141413] rebus-stamp-shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-[#e5e0d4]">
+            <div>
+              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-widest block mb-0.5">Saved Voices</span>
+              <h3 class="text-sm font-bold text-[#141413] uppercase tracking-tight">
+                My Saved Voices (<span id="saved-voices-count">0</span>)
+              </h3>
+            </div>
+            <span class="text-[10px] font-bold text-[#5c5b56] px-2 py-1 bg-[#f4f0e6] border border-[#141413] uppercase tracking-wider">
+              Stored Safely On Your Device
+            </span>
+          </div>
+
+          <div id="saved-voices-container" class="space-y-3">
+            <div class="p-6 bg-[#fbf9f5] border border-[#e5e0d4] text-center text-xs text-[#5c5b56]">
+              No custom voices saved yet. Record your voice using the microphone above to save your first private voice.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Text-to-Speech Generation & Audio Output Area (Active in TTS mode) -->
+      <div id="tts-generation-area" class="space-y-6 mt-6">
+        <!-- Text Input Area -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="text-input" class="text-xs font-bold text-[#141413] uppercase tracking-wider">
+              Text to Speak
+            </label>
+            <span class="text-xs font-medium text-[#5c5b56]">
+              <span id="char-count" class="font-bold text-[#141413]">78</span> characters
+            </span>
+          </div>
+
+          <div class="relative">
+            <textarea
+              id="text-input"
+              rows="4"
+              class="w-full p-4 bg-[#fbf9f5] border border-[#141413] text-sm text-[#141413] placeholder-[#96948c] focus-visible:ring-2 focus-visible:ring-[#141413] resize-y leading-relaxed font-medium"
+              placeholder="Type or paste any text to turn into speech…"
+            >Welcome! Type or paste any text here to turn it into clear, natural speech.</textarea>
+          </div>
+
+          <!-- Sample Presets (No Pills) -->
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider mr-1">Sample text:</span>
+            <button
+              type="button"
+              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-text="Welcome! Type or paste any text here to turn it into clear, natural speech."
+            >
+              Welcome
+            </button>
+            <button
+              type="button"
+              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-text="Thank you for reaching out today. I am happy to help you with your question."
+            >
+              Support
+            </button>
+            <button
+              type="button"
+              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-text="The sun was setting behind the hills, casting a warm golden glow across the quiet valley."
+            >
+              Story
+            </button>
+            <button
+              type="button"
+              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-text="In this quick tutorial, you will learn how to create high quality audio in seconds."
+            >
+              Tutorial
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons (No Pills) -->
+        <div class="mt-8 flex items-center space-x-3">
+          <!-- CTA button -->
           <button
-            id="download-audio-btn"
+            id="generate-btn"
+            type="button"
+            class="px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center space-x-2 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <span id="btn-text">Create Voice</span>
+            <div id="btn-loader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin"></div>
+          </button>
+
+          <!-- Stop Button -->
+          <button
+            id="stop-btn"
             type="button"
             disabled
-            class="inline-flex items-center justify-center space-x-2 px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+            class="px-4 py-2.5 border border-[#e5e0d4] text-xs font-bold uppercase tracking-wider bg-transparent text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>Download Audio</span>
+            Stop
           </button>
         </div>
 
-        <!-- Performance Stats (Clean, simple, no mono typography) -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Response Time</span>
-            <div class="text-base font-bold text-[#141413] mt-1">
-              <span id="stat-ttfb">--</span> <span class="text-xs font-normal text-[#5c5b56]">ms</span>
+        <!-- Output Section: Spectrum Visualizer, Audio Player & Download -->
+        <div class="mt-8 pt-8 border-t border-[#e5e0d4] space-y-6">
+          
+          <!-- Audio Visualizer Canvas -->
+          <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
+            <div class="flex items-center justify-between mb-3 text-xs">
+              <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">Voice Wave</span>
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 bg-emerald-500"></span>
+                <span id="stat-status" class="text-xs font-bold text-[#141413] uppercase tracking-wider">Ready</span>
+              </div>
             </div>
-            <span class="text-[10px] text-[#5c5b56]">Fast generation</span>
+            <div class="w-full h-20 bg-white border border-[#141413] overflow-hidden relative">
+              <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+            </div>
           </div>
 
-          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Speed Ratio</span>
-            <div class="text-base font-bold text-[#141413] mt-1">
-              <span id="stat-rtfx">--</span> <span class="text-xs font-normal text-[#5c5b56]">x</span>
+          <!-- Audio Player & Download Button -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-white border border-[#141413] rebus-stamp-shadow-sm">
+            <div class="flex items-center space-x-3 w-full sm:w-auto">
+              <audio id="audio-playback" controls class="w-full sm:w-80 h-10"></audio>
+              <span id="audio-duration-text" class="text-xs font-bold text-[#5c5b56] whitespace-nowrap">0.0s</span>
             </div>
-            <span class="text-[10px] text-emerald-700 font-semibold">Faster than audio</span>
+
+            <button
+              id="download-audio-btn"
+              type="button"
+              disabled
+              class="inline-flex items-center justify-center space-x-2 px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Download Voice</span>
+            </button>
           </div>
 
-          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Audio Quality</span>
-            <div class="text-base font-bold text-[#141413] mt-1">
-              Studio HD
+          <!-- Performance Stats (Clean, simple, everyday vocabulary) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Time Taken</span>
+              <div class="text-base font-bold text-[#141413] mt-1">
+                <span id="stat-ttfb">--</span> <span class="text-xs font-normal text-[#5c5b56]">ms</span>
+              </div>
+              <span class="text-[10px] text-[#5c5b56]">Instant on device</span>
             </div>
-            <span class="text-[10px] text-[#5c5b56]">24kHz clarity</span>
+
+            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Speed</span>
+              <div class="text-base font-bold text-[#141413] mt-1">
+                <span id="stat-rtfx">--</span> <span class="text-xs font-normal text-[#5c5b56]">x</span>
+              </div>
+              <span class="text-[10px] text-emerald-700 font-semibold">Faster than speech</span>
+            </div>
+
+            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Sound Quality</span>
+              <div class="text-base font-bold text-[#141413] mt-1">
+                Clear HD
+              </div>
+              <span class="text-[10px] text-[#5c5b56]">Natural voice tone</span>
+            </div>
+
+            <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
+              <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Voice Length</span>
+              <div class="text-base font-bold text-[#141413] mt-1">
+                <span id="stat-duration">0.0s</span>
+              </div>
+              <span class="text-[10px] text-[#5c5b56]">Total audio length</span>
+            </div>
           </div>
 
-          <div class="p-3 bg-[#fbf9f5] border border-[#e5e0d4]">
-            <span class="text-[10px] font-bold text-[#5c5b56] uppercase tracking-wider block">Audio Length</span>
-            <div class="text-base font-bold text-[#141413] mt-1">
-              <span id="stat-duration">0.0s</span>
-            </div>
-            <span class="text-[10px] text-[#5c5b56]">Standard audio</span>
-          </div>
         </div>
 
       </div>
@@ -383,11 +548,21 @@
 <script type="module" src="/pocket-client.js"></script>
 
 <style>
-  /* Ensure active dark tab never turns invisible black on hover */
-  #tab-tts.bg-\[\#171717\]:hover,
-  #tab-clone.bg-\[\#171717\]:hover,
-  #tab-tts[class*="bg-"]:hover,
-  #tab-clone[class*="bg-"]:hover {
+  /* Active tab is dark background with white text */
+  #tab-tts.is-active,
+  #tab-clone.is-active {
+    background-color: #171717 !important;
     color: #ffffff !important;
+  }
+  /* Inactive tab is dark gray text on cream, hover stays dark (never turns white) */
+  #tab-tts:not(.is-active),
+  #tab-clone:not(.is-active) {
+    background-color: transparent !important;
+    color: #4d4d4d !important;
+  }
+  #tab-tts:not(.is-active):hover,
+  #tab-clone:not(.is-active):hover {
+    color: #141413 !important;
+    background-color: rgba(20, 20, 19, 0.05) !important;
   }
 </style>

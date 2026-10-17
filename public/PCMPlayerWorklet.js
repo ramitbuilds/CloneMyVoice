@@ -310,7 +310,7 @@ export class PCMPlayerWorklet extends EventEmitter {
 
           case 'underrun':
             this.metrics.underruns++;
-            console.warn(`[MAIN THREAD] ⚠️ UNDERRUN #${this.metrics.underruns} detected! buffered=${e.data.buffered} samples, needed=${e.data.needed} samples`);
+            console.warn(`[MAIN THREAD] [UNDERRUN] #${this.metrics.underruns} detected! buffered=${e.data.buffered} samples, needed=${e.data.needed} samples`);
             // Try to send more data immediately
             this.processPendingChunks();
             break;
