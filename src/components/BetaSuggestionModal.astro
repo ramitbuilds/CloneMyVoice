@@ -1,0 +1,462 @@
+---
+// BetaSuggestionModal.astro
+// Floating feedback trigger & proactive suggestion modal for Voco Speech
+---
+
+<!-- Floating Feedback Trigger Button (Bottom Right) -->
+<aside aria-label="Feedback and suggestions" class="fixed bottom-5 right-5 z-40 print:hidden">
+  <button
+    type="button"
+    id="open-suggestion-modal-btn"
+    class="group inline-flex items-center space-x-2 px-3.5 py-2.5 bg-[#141413] text-white border border-[#141413] text-xs font-bold uppercase tracking-wider rebus-stamp-shadow hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer"
+    title="Give suggestions for Voco Speech"
+  >
+    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span>Suggestions</span>
+  </button>
+</aside>
+
+<!-- Suggestion Modal Backdrop & Container -->
+<div
+  id="suggestion-modal-backdrop"
+  class="fixed inset-0 z-50 bg-[#141413]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-200"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="suggestion-modal-title"
+>
+  <div
+    id="suggestion-modal-box"
+    class="relative w-full max-w-lg bg-[#fbf9f5] border-2 border-[#141413] rebus-stamp-shadow p-6 sm:p-8 transform scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto"
+  >
+    <!-- Modal Header -->
+    <div class="flex items-start justify-between pb-4 border-b border-[#e5e0d4]">
+      <div class="space-y-1 pr-4">
+        <div class="flex items-center space-x-2">
+          <span class="text-[10px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 border border-[#141413] bg-[#f4f0e6] text-[#141413]">
+            Suggestions
+          </span>
+          <span id="suggestion-badge-context" class="hidden text-[10px] font-mono uppercase tracking-wider text-[#5c5b56]">
+            • Generation Complete
+          </span>
+        </div>
+        <h3 id="suggestion-modal-title" class="text-2xl sm:text-3xl font-normal font-editorial-serif text-[#141413] leading-tight">
+          Help shape Voco Speech
+        </h3>
+        <p id="suggestion-modal-subtitle" class="text-xs text-[#5c5b56] leading-relaxed">
+          We read every suggestion. Tell us what features, voices, or quality improvements you want.
+        </p>
+      </div>
+
+      <!-- Close X Button -->
+      <button
+        type="button"
+        id="close-suggestion-modal-btn"
+        class="shrink-0 p-1.5 border border-[#e5e0d4] text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] bg-white transition-colors cursor-pointer"
+        aria-label="Close suggestions modal"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Main Suggestion Form -->
+    <form id="suggestion-form" class="mt-5 space-y-5">
+      <!-- Quick Category Picker -->
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-[#5c5b56] mb-2">
+          What is your suggestion about? (Optional)
+        </label>
+        <div class="flex flex-wrap gap-1.5" id="suggestion-topic-group">
+          <button
+            type="button"
+            data-topic="Voice Quality"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+          >
+            Voice Quality
+          </button>
+          <button
+            type="button"
+            data-topic="New Voices"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+          >
+            New Voices & Accents
+          </button>
+          <button
+            type="button"
+            data-topic="Voice Cloning"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+          >
+            Voice Cloning
+          </button>
+          <button
+            type="button"
+            data-topic="New Feature"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+          >
+            New Feature
+          </button>
+          <button
+            type="button"
+            data-topic="Speed / Performance"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+          >
+            Speed / Performance
+          </button>
+        </div>
+      </div>
+
+      <!-- Suggestion Text Input -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="suggestion-text" class="text-xs font-bold uppercase tracking-wider text-[#141413]">
+            Your Suggestion <span class="text-red-600">*</span>
+          </label>
+          <span class="text-[11px] text-[#5c5b56]">Optional, but appreciated</span>
+        </div>
+        <textarea
+          id="suggestion-text"
+          name="suggestion"
+          rows="4"
+          required
+          placeholder="e.g. Could you add a British narrator voice? Or let us export in FLAC/WAV format?"
+          class="w-full p-3 bg-white border border-[#141413] text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Attribution Choice: Named (With Credit) vs Anonymous -->
+      <div class="p-4 bg-[#f4f0e6] border border-[#e5e0d4] space-y-3">
+        <label class="block text-xs font-bold uppercase tracking-wider text-[#141413]">
+          Attribution & Credit
+        </label>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- Option 1: Named with Credit -->
+          <label class="attribution-label flex items-start space-x-2 p-2.5 border border-[#141413] bg-white cursor-pointer select-none">
+            <input
+              type="radio"
+              name="attribution_type"
+              value="credited"
+              checked
+              class="mt-0.5 accent-[#141413]"
+              id="attrib-credited-radio"
+            />
+            <div class="text-xs">
+              <span class="font-bold text-[#141413] block">Credit My Name</span>
+              <span class="text-[11px] text-[#5c5b56] leading-tight block mt-0.5">
+                Get credited on our changelog if your idea is built.
+              </span>
+            </div>
+          </label>
+
+          <!-- Option 2: Anonymous -->
+          <label class="attribution-label flex items-start space-x-2 p-2.5 border border-[#e5e0d4] bg-white cursor-pointer select-none">
+            <input
+              type="radio"
+              name="attribution_type"
+              value="anonymous"
+              class="mt-0.5 accent-[#141413]"
+              id="attrib-anon-radio"
+            />
+            <div class="text-xs">
+              <span class="font-bold text-[#141413] block">Submit Anonymously</span>
+              <span class="text-[11px] text-[#5c5b56] leading-tight block mt-0.5">
+                Keep this 100% private with no name attached.
+              </span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Name / Handle Input (Visible when Credited is selected) -->
+        <div id="attribution-name-wrapper" class="pt-1">
+          <label for="suggestion-author-name" class="block text-[11px] font-bold uppercase tracking-wider text-[#5c5b56] mb-1">
+            Your Name, Handle, or Email (for credit)
+          </label>
+          <input
+            type="text"
+            id="suggestion-author-name"
+            placeholder="e.g. Alex M. or @alexbuilds"
+            class="w-full px-3 py-2 bg-white border border-[#141413] text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
+          />
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+        <button
+          type="button"
+          id="skip-suggestion-btn"
+          class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#5c5b56] hover:text-[#141413] transition-colors cursor-pointer text-center"
+        >
+          Skip for now
+        </button>
+
+        <button
+          type="submit"
+          id="submit-suggestion-btn"
+          class="inline-flex items-center justify-center px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+        >
+          <span>Submit Suggestion</span>
+          <span class="ml-1.5">→</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Feedback View (Hidden initially) -->
+    <div id="suggestion-success-view" class="hidden mt-6 text-center space-y-4 py-4">
+      <div class="w-12 h-12 mx-auto bg-emerald-600 text-white flex items-center justify-center border border-[#141413] rebus-stamp-shadow-sm">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <div class="space-y-1">
+        <h4 class="text-2xl font-editorial-serif text-[#141413]">
+          Thank you for your suggestion!
+        </h4>
+        <p id="suggestion-success-desc" class="text-xs text-[#5c5b56] max-w-sm mx-auto leading-relaxed">
+          Your feedback directly informs our next release.
+        </p>
+      </div>
+
+      <div class="pt-2 text-[11px] text-[#5c5b56]">
+        Direct questions or ideas? You can also email us anytime at
+        <a href="mailto:hi@vocospeech.xyz" class="font-bold underline text-[#141413] hover:text-black">
+          hi@vocospeech.xyz
+        </a>
+      </div>
+
+      <div class="pt-3">
+        <button
+          type="button"
+          id="close-success-btn"
+          class="px-6 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm cursor-pointer"
+        >
+          Back to Voco Speech
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  const backdrop = document.getElementById("suggestion-modal-backdrop");
+  const modalBox = document.getElementById("suggestion-modal-box");
+  const openBtn = document.getElementById("open-suggestion-modal-btn");
+  const closeBtn = document.getElementById("close-suggestion-modal-btn");
+  const skipBtn = document.getElementById("skip-suggestion-btn");
+  const closeSuccessBtn = document.getElementById("close-success-btn");
+  const form = document.getElementById("suggestion-form");
+  const successView = document.getElementById("suggestion-success-view");
+  const successDesc = document.getElementById("suggestion-success-desc");
+  const titleEl = document.getElementById("suggestion-modal-title");
+  const subtitleEl = document.getElementById("suggestion-modal-subtitle");
+  const badgeContextEl = document.getElementById("suggestion-badge-context");
+  const authorNameInput = document.getElementById("suggestion-author-name");
+  const nameWrapper = document.getElementById("attribution-name-wrapper");
+  const creditedRadio = document.getElementById("attrib-credited-radio");
+  const anonRadio = document.getElementById("attrib-anon-radio");
+  const topicPills = document.querySelectorAll(".topic-pill");
+
+  let selectedTopic = "";
+  let modalOpen = false;
+
+  // Global function to open suggestion modal from anywhere (e.g. generation finished, button clicked)
+  window.openSuggestionModal = function(options = {}) {
+    if (modalOpen) return;
+    modalOpen = true;
+
+    // Reset view
+    if (form) form.classList.remove("hidden");
+    if (successView) successView.classList.add("hidden");
+
+    if (options.title && titleEl) {
+      titleEl.textContent = options.title;
+    } else if (titleEl) {
+      titleEl.textContent = "Help shape Voco Speech";
+    }
+
+    if (options.subtitle && subtitleEl) {
+      subtitleEl.textContent = options.subtitle;
+    } else if (subtitleEl) {
+      subtitleEl.textContent = "We read every suggestion. Tell us what features, voices, or quality improvements you want.";
+    }
+
+    if (options.trigger === "generation" && badgeContextEl) {
+      badgeContextEl.classList.remove("hidden");
+      badgeContextEl.textContent = "• Generation Complete";
+    } else if (options.trigger === "voice_saved" && badgeContextEl) {
+      badgeContextEl.classList.remove("hidden");
+      badgeContextEl.textContent = "• Voice Saved";
+    } else if (badgeContextEl) {
+      badgeContextEl.classList.add("hidden");
+    }
+
+    if (backdrop && modalBox) {
+      backdrop.classList.remove("opacity-0", "pointer-events-none");
+      backdrop.classList.add("opacity-100");
+      modalBox.classList.remove("scale-95");
+      modalBox.classList.add("scale-100");
+      document.body.style.overflow = "hidden";
+    }
+
+    // Auto-focus suggestion textarea
+    setTimeout(() => {
+      const textarea = document.getElementById("suggestion-text");
+      if (textarea) textarea.focus();
+    }, 150);
+  };
+
+  function closeSuggestionModal() {
+    modalOpen = false;
+    if (backdrop && modalBox) {
+      backdrop.classList.add("opacity-0", "pointer-events-none");
+      backdrop.classList.remove("opacity-100");
+      modalBox.classList.add("scale-95");
+      modalBox.classList.remove("scale-100");
+      document.body.style.overflow = "";
+    }
+    // Record dismiss timestamp
+    sessionStorage.setItem("voco_suggestion_dismissed", String(Date.now()));
+  }
+
+  // Event Listeners
+  if (openBtn) {
+    openBtn.addEventListener("click", () => window.openSuggestionModal());
+  }
+
+  const navBtn = document.getElementById("nav-suggestion-btn");
+  if (navBtn) {
+    navBtn.addEventListener("click", () => window.openSuggestionModal());
+  }
+
+  if (closeBtn) closeBtn.addEventListener("click", closeSuggestionModal);
+  if (skipBtn) skipBtn.addEventListener("click", closeSuggestionModal);
+  if (closeSuccessBtn) closeSuccessBtn.addEventListener("click", closeSuggestionModal);
+
+  // Close when clicking outside modal box
+  if (backdrop) {
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) closeSuggestionModal();
+    });
+  }
+
+  // ESC key to close
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalOpen) {
+      closeSuggestionModal();
+    }
+  });
+
+  // Topic pills selection
+  topicPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const topic = pill.getAttribute("data-topic");
+      if (selectedTopic === topic) {
+        selectedTopic = "";
+        pill.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
+        pill.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+      } else {
+        topicPills.forEach((p) => {
+          p.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
+          p.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+        });
+        selectedTopic = topic;
+        pill.classList.add("bg-[#141413]", "text-white", "border-[#141413]");
+        pill.classList.remove("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+      }
+    });
+  });
+
+  // Attribution radio toggle
+  function updateAttributionState() {
+    const isCredited = creditedRadio && creditedRadio.checked;
+    if (nameWrapper) {
+      if (isCredited) {
+        nameWrapper.classList.remove("hidden");
+        if (authorNameInput) authorNameInput.disabled = false;
+      } else {
+        nameWrapper.classList.add("hidden");
+        if (authorNameInput) authorNameInput.disabled = true;
+      }
+    }
+  }
+
+  if (creditedRadio) creditedRadio.addEventListener("change", updateAttributionState);
+  if (anonRadio) anonRadio.addEventListener("change", updateAttributionState);
+
+  // Form submission
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const textVal = document.getElementById("suggestion-text")?.value?.trim();
+      if (!textVal) return;
+
+      const isCredited = creditedRadio && creditedRadio.checked;
+      const authorName = isCredited ? (authorNameInput?.value?.trim() || "Anonymous Creator") : "Anonymous";
+
+      const suggestionData = {
+        id: "sug_" + Date.now(),
+        text: textVal,
+        topic: selectedTopic || "General",
+        attribution: isCredited ? "credited" : "anonymous",
+        authorName: authorName,
+        createdAt: new Date().toISOString(),
+        url: window.location.href,
+      };
+
+      // Store persistently in localStorage
+      try {
+        const stored = JSON.parse(localStorage.getItem("voco_user_suggestions") || "[]");
+        stored.push(suggestionData);
+        localStorage.setItem("voco_user_suggestions", JSON.stringify(stored));
+      } catch (err) {
+        console.warn("Could not save to localStorage:", err);
+      }
+
+      // Mark suggestion submitted in this session
+      sessionStorage.setItem("voco_suggestion_submitted", "true");
+
+      // Show success screen
+      form.classList.add("hidden");
+      if (successView) successView.classList.remove("hidden");
+
+      if (successDesc) {
+        if (isCredited && authorName !== "Anonymous Creator") {
+          successDesc.textContent = `Your suggestion has been logged under "${authorName}". If we build it, you will be credited in our public release changelog!`;
+        } else {
+          successDesc.textContent = "Your anonymous suggestion has been logged. Thank you for helping make Voco Speech better!";
+        }
+      }
+
+      // Reset fields
+      form.reset();
+      selectedTopic = "";
+      topicPills.forEach((p) => {
+        p.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
+        p.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+      });
+      updateAttributionState();
+    });
+  }
+
+  // Proactive website usage prompt (triggers after ~45s if user hasn't seen it or submitted)
+  setTimeout(() => {
+    const alreadySubmitted = sessionStorage.getItem("voco_suggestion_submitted");
+    const dismissedAt = sessionStorage.getItem("voco_suggestion_dismissed");
+    const dismissedRecently = dismissedAt && (Date.now() - Number(dismissedAt) < 15 * 60 * 1000);
+
+    if (!alreadySubmitted && !dismissedRecently && !modalOpen) {
+      window.openSuggestionModal({
+        trigger: "idle_usage",
+        title: "Enjoying Voco Speech?",
+        subtitle: "You've been exploring the app! Take 10 seconds to share what feature or voice you'd like us to build next."
+      });
+    }
+  }, 45000);
+})();
+</script>

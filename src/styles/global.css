@@ -64,6 +64,19 @@
   box-shadow: 1.5px 1.5px 0px #141413;
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite !important;
+}
+
 .rebus-stamp-shadow-lg {
   box-shadow: 3px 3px 0px #141413;
 }

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import BetaSuggestionModal from "../components/BetaSuggestionModal.astro";
 
 interface Props {
   title?: string;
@@ -48,5 +49,8 @@ const {
     </a>
 
     <slot />
+
+    <!-- Global Beta Suggestion System -->
+    <BetaSuggestionModal />
   </body>
 </html>

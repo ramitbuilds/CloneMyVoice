@@ -1,0 +1,55 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout
+  title="404 — Page Not Found | Voco Speech"
+  description="The requested page could not be found. Return to Voco Speech."
+>
+  <Navbar />
+  
+  <main id="main-content" class="min-h-[75vh] bg-[#fbf9f5] py-16 md:py-24 border-b border-[#e5e0d4] flex items-center justify-center">
+    <div class="max-w-xl mx-auto px-4 sm:px-6 w-full text-center">
+      
+      <div class="bg-white border-2 border-[#141413] rebus-stamp-shadow p-8 sm:p-12 space-y-6">
+        <!-- Rebus 404 Stamp Box -->
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-[#141413] text-white font-extrabold text-3xl rebus-stamp-shadow-sm" style="font-family: 'Space Grotesk', sans-serif;">
+          404
+        </div>
+
+        <div>
+          <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-1">
+            // Error Code 404
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-[#141413] tracking-tight uppercase" style="font-family: 'Space Grotesk', sans-serif;">
+            Page Not Found
+          </h1>
+        </div>
+
+        <p class="text-sm text-[#5c5b56] leading-relaxed max-w-sm mx-auto">
+          The page you are looking for has been moved, deleted, or does not exist.
+        </p>
+
+        <div class="pt-4 border-t border-[#e5e0d4] flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="/"
+            class="w-full sm:w-auto px-6 py-2.5 bg-[#141413] border border-[#141413] text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center"
+          >
+            <span>Back to Workspace →</span>
+          </a>
+          <a
+            href="/contact"
+            class="w-full sm:w-auto px-6 py-2.5 bg-white border border-[#141413] text-xs font-bold uppercase tracking-wider text-[#141413] hover:bg-[#f4f0e6] transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center"
+          >
+            <span>Contact Support</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

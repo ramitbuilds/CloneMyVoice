@@ -1,0 +1,95 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout
+  title="Contact Us — Voco Speech"
+  description="Contact Voco Speech at hi@vocospeech.xyz"
+>
+  <Navbar />
+  
+  <main id="main-content" class="min-h-[75vh] bg-[#fbf9f5] py-12 md:py-20 border-b border-[#e5e0d4]">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Breadcrumb -->
+      <nav class="mb-6 flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#5c5b56]">
+        <a href="/" class="hover:text-[#141413] transition-colors">Home</a>
+        <span>/</span>
+        <span class="text-[#141413]">Contact Us</span>
+      </nav>
+
+      <!-- Page Header with Rebus Divider -->
+      <div class="mb-10 pb-6 border-b border-[#e5e0d4]">
+        <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
+          // Get In Touch
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[#141413] tracking-tight uppercase" style="font-family: 'Space Grotesk', sans-serif;">
+          Contact Us
+        </h1>
+        <p class="text-sm sm:text-base text-[#5c5b56] mt-2 leading-relaxed">
+          Have questions, suggestions, or need technical assistance with voice generation? We'd love to hear from you.
+        </p>
+      </div>
+
+      <!-- Main Editorial Contact Card -->
+      <div class="bg-white border-2 border-[#141413] rebus-stamp-shadow p-6 sm:p-10 space-y-6">
+        
+        <!-- Direct Mail Box -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 bg-[#fbf9f5] border border-[#141413]">
+          <div>
+            <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-1.5">
+              Email Address
+            </span>
+            <span id="contact-email" class="text-xl sm:text-2xl font-mono font-bold text-[#141413] select-all">
+              hi@vocospeech.xyz
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-3 shrink-0">
+            <button
+              type="button"
+              id="copy-email-btn"
+              class="px-4 py-2.5 bg-white border border-[#141413] text-xs font-bold uppercase tracking-wider text-[#141413] hover:bg-[#141413] hover:text-white transition-all cursor-pointer"
+            >
+              <span id="copy-text">Copy Address</span>
+            </button>
+            <a
+              href="mailto:hi@vocospeech.xyz"
+              class="px-5 py-2.5 bg-[#141413] border border-[#141413] text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all inline-flex items-center space-x-1.5"
+            >
+              <span>Write Email</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <p class="text-xs text-[#5c5b56] leading-relaxed">
+          Drop us an email anytime and we will get back to you directly.
+        </p>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script is:inline>
+    const copyBtn = document.getElementById("copy-email-btn");
+    const copyText = document.getElementById("copy-text");
+    if (copyBtn && copyText) {
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText("hi@vocospeech.xyz").then(() => {
+          copyText.textContent = "Copied!";
+          setTimeout(() => {
+            copyText.textContent = "Copy Address";
+          }, 2500);
+        }).catch(() => {
+          copyText.textContent = "hi@vocospeech.xyz";
+        });
+      });
+    }
+  </script>
+
+  <Footer />
+</Layout>

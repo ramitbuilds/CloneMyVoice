@@ -664,9 +664,11 @@ export class PocketTTSClient {
                     }
                     if (this.el.saveCloneBtnContent) {
                         this.el.saveCloneBtnContent.classList.remove("hidden");
+                        this.el.saveCloneBtnContent.style.display = "";
                     }
                     if (this.el.saveCloneBtnLoader) {
                         this.el.saveCloneBtnLoader.classList.add("hidden");
+                        this.el.saveCloneBtnLoader.style.display = "none";
                     }
                     if (this.el.saveCloneBtnText) {
                         this.el.saveCloneBtnText.textContent = "Save Voice";
@@ -746,6 +748,9 @@ export class PocketTTSClient {
             this.el.textInput?.focus();
             return;
         }
+
+        // Immediately disable button and show only the rotating spinner
+        this.setButtonState("generating");
 
         let targetVoice = this.el.voiceSelect?.value || this.currentVoice || "alba";
 
@@ -882,6 +887,17 @@ export class PocketTTSClient {
 
             this.updateStatus("Voice ready! Press play below to listen.", "idle");
             if (this.el.statStatus) this.el.statStatus.textContent = "Ready";
+
+            // Trigger suggestion popup after generation so users can share feedback
+            setTimeout(() => {
+                if (window.openSuggestionModal) {
+                    window.openSuggestionModal({
+                        trigger: "generation",
+                        title: "How did that voice sound?",
+                        subtitle: "Help shape Voco Speech. What improvements, voices, or tweaks would you suggest?"
+                    });
+                }
+            }, 1200);
         }
     }
 
@@ -1247,9 +1263,11 @@ export class PocketTTSClient {
         }
         if (this.el.saveCloneBtnContent) {
             this.el.saveCloneBtnContent.classList.add("hidden");
+            this.el.saveCloneBtnContent.style.setProperty("display", "none", "important");
         }
         if (this.el.saveCloneBtnLoader) {
             this.el.saveCloneBtnLoader.classList.remove("hidden");
+            this.el.saveCloneBtnLoader.style.setProperty("display", "inline-flex", "important");
         }
 
         const durationSec = this.pendingClonedAudio.length / SAMPLE_RATE;
@@ -1286,6 +1304,16 @@ export class PocketTTSClient {
             await this.updateVoiceDropdown(this.currentVoice);
 
             this.updateStatus(`Voice "${saveRecord.name}" saved safely on this device`, "idle");
+
+            setTimeout(() => {
+                if (window.openSuggestionModal) {
+                    window.openSuggestionModal({
+                        trigger: "voice_saved",
+                        title: "Voice Profile Created",
+                        subtitle: "What other voice cloning options or settings would you like to see?"
+                    });
+                }
+            }, 1200);
         } catch (storageErr) {
             console.error("IndexedDB save error:", storageErr);
             alert("Could not save voice to browser storage: " + storageErr.message);
@@ -1295,9 +1323,11 @@ export class PocketTTSClient {
             }
             if (this.el.saveCloneBtnContent) {
                 this.el.saveCloneBtnContent.classList.remove("hidden");
+                this.el.saveCloneBtnContent.style.display = "";
             }
             if (this.el.saveCloneBtnLoader) {
                 this.el.saveCloneBtnLoader.classList.add("hidden");
+                this.el.saveCloneBtnLoader.style.display = "none";
             }
             if (this.el.saveCloneBtnText) {
                 this.el.saveCloneBtnText.textContent = "Save Voice";
@@ -1475,12 +1505,24 @@ export class PocketTTSClient {
         if (!this.el.generateBtn) return;
         if (state === "loading" || state === "generating") {
             this.el.generateBtn.disabled = true;
-            if (this.el.btnContent) this.el.btnContent.classList.add("hidden");
-            if (this.el.btnLoader) this.el.btnLoader.classList.remove("hidden");
+            if (this.el.btnContent) {
+                this.el.btnContent.classList.add("hidden");
+                this.el.btnContent.style.setProperty("display", "none", "important");
+            }
+            if (this.el.btnLoader) {
+                this.el.btnLoader.classList.remove("hidden");
+                this.el.btnLoader.style.setProperty("display", "inline-flex", "important");
+            }
         } else {
             this.el.generateBtn.disabled = false;
-            if (this.el.btnContent) this.el.btnContent.classList.remove("hidden");
-            if (this.el.btnLoader) this.el.btnLoader.classList.add("hidden");
+            if (this.el.btnContent) {
+                this.el.btnContent.classList.remove("hidden");
+                this.el.btnContent.style.display = "";
+            }
+            if (this.el.btnLoader) {
+                this.el.btnLoader.classList.add("hidden");
+                this.el.btnLoader.style.display = "none";
+            }
             if (this.el.btnText) {
                 this.el.btnText.textContent = text || "Generate Speech";
             }
