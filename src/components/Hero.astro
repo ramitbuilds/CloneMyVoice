@@ -2,22 +2,24 @@
 // Hero section styled in clean Rebus editorial aesthetic: bold typography, no emojis, no pills or badge chips
 ---
 
-<section class="relative pt-16 pb-16 md:pt-24 md:pb-24 rebus-grid-bg border-b border-[#e5e0d4] overflow-hidden">
+<section class="relative pt-10 pb-12 sm:pt-16 sm:pb-16 md:pt-24 md:pb-24 rebus-grid-bg border-b border-[#e5e0d4] overflow-hidden">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
     
     <!-- Semantic Eyebrow Tag -->
-    <div class="inline-flex items-center space-x-2 px-3 py-1 border border-[#141413] bg-[#f4f0e6] text-[#141413] text-xs font-mono font-bold uppercase tracking-wider mb-6 rebus-stamp-shadow-sm select-none">
+    <div class="inline-flex items-center space-x-2 px-2.5 sm:px-3 py-1 border border-[#141413] bg-[#f4f0e6] text-[#141413] text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider mb-4 sm:mb-6 rebus-stamp-shadow-sm select-none">
+      <img src="/icon/dark_background_icon.png" alt="" class="w-3.5 h-3.5 rounded-xs dark:hidden inline-block" />
+      <img src="/icon/white_background_icon.png" alt="" class="w-3.5 h-3.5 rounded-xs hidden dark:inline-block" />
       <span>Free TTS & Free Voice Cloning</span>
     </div>
 
-    <!-- Main Headline with Editorial Serif Accent -->
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[#141413] text-balance leading-[1.1] mb-6">
-      Free text to speech.<br class="hidden sm:inline" />
-      <span class="font-editorial-serif font-normal italic">Instant, private voice cloning.</span>
+    <!-- Main Headline with Editorial Serif Accent: Strictly on 2 separate lines on all devices -->
+    <h1 class="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[#141413] leading-[1.18] sm:leading-[1.12] mb-4 sm:mb-6">
+      <span class="block">Free text to speech.</span>
+      <span class="block font-editorial-serif font-normal italic mt-1 sm:mt-2">Instant, private voice cloning.</span>
     </h1>
 
     <!-- Subtitle: Dead-simple, high-authority keyword synthesis -->
-    <p class="text-base sm:text-lg text-[#5c5b56] max-w-2xl mx-auto text-pretty leading-relaxed">
+    <p class="text-sm sm:text-base md:text-lg text-[#5c5b56] max-w-2xl mx-auto text-pretty leading-relaxed">
       Convert text to speech online free or clone your voice from a short audio clip. Browser-based AI voice generator with zero cloud uploads, natural sounding speech, unlimited generations, and no signup required.
     </p>
 

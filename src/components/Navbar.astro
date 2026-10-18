@@ -1,28 +1,40 @@
 ---
-// Navbar component styled in Rebus design aesthetic
+// Navbar component styled in Rebus design aesthetic with full mobile responsiveness and drawer
 import ThemeToggle from "./ThemeToggle.astro";
 ---
 
-<header class="sticky top-0 z-40 w-full border-b border-[#e5e0d4] bg-[#fbf9f5]/90 backdrop-blur-md">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-    <!-- Brand / Logo (Rebus Emblem) -->
-    <div class="flex items-center space-x-3">
-      <a href="/" class="flex items-center space-x-3 group focus-visible:ring-2 focus-visible:ring-[#141413]">
-        <!-- Tactile Rebus Stamp Mark -->
-        <div class="w-9 h-9 border border-[#141413] bg-[#141413] text-white flex items-center justify-center font-bold rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
-          <svg class="w-5 h-5 text-[#fbf9f5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
-          </svg>
+<header class="sticky top-0 z-40 w-full border-b border-[#e5e0d4] bg-[#fbf9f5]/90 dark:bg-[#121211]/90 backdrop-blur-md">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Brand / Logo (Using real brand icons from /icon folder) -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <a href="/" class="flex items-center space-x-2.5 sm:space-x-3 group focus-visible:ring-2 focus-visible:ring-[#141413]">
+        <!-- Brand Logo Mark: Dark Background in Light Theme, White Background in Dark Theme -->
+        <div class="w-8 h-8 sm:w-9 sm:h-9 border border-[#141413] dark:border-[#3b3a36] bg-[#141413] dark:bg-[#ffffff] flex items-center justify-center rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all shrink-0 overflow-hidden p-1">
+          <img
+            src="/icon/dark_background_icon.png"
+            alt="Voco Speech"
+            class="w-full h-full object-contain dark:hidden block"
+            width="36"
+            height="36"
+          />
+          <img
+            src="/icon/white_background_icon.png"
+            alt="Voco Speech"
+            class="w-full h-full object-contain hidden dark:block"
+            width="36"
+            height="36"
+          />
         </div>
-        <span class="text-xl font-extrabold tracking-tight uppercase text-[#141413]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em;">
+        <span class="text-base sm:text-xl font-extrabold tracking-tight uppercase text-[#141413] dark:text-[#f5f4ef] truncate" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em;">
           Voco Speech
         </span>
       </a>
     </div>
 
     <!-- Navigation / Actions -->
-    <div class="flex items-center space-x-3 sm:space-x-4 md:space-x-6">
-      <nav class="hidden md:flex items-center space-x-6 text-xs font-semibold uppercase tracking-wider text-[#5c5b56]">
+    <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-5">
+      <!-- Desktop Navigation Menu (Visible on lg >= 1024px) -->
+      <nav class="hidden lg:flex items-center space-x-6 text-xs font-semibold uppercase tracking-wider text-[#5c5b56]">
         <a 
           href="/#workbench" 
           class="hover:text-[#141413] transition-colors py-1 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#141413] hover:after:w-full after:transition-all"
@@ -49,17 +61,155 @@ import ThemeToggle from "./ThemeToggle.astro";
         </a>
       </nav>
 
-      <!-- Theme Switcher (Light, Dark, System) -->
+      <!-- Theme Switcher (Single Icon Toggle) -->
       <ThemeToggle />
 
-      <!-- Action Button (Tactile Stamp, No pill) -->
+      <!-- Action CTA Button (Desktop visible; on mobile it appears inside the hamburger menu) -->
       <a
         href="/#workbench"
-        class="inline-flex items-center px-3.5 py-2 sm:px-4 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+        class="hidden lg:inline-flex items-center px-3.5 py-1.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
       >
         <span>Generate</span>
-        <span class="ml-1.5 hidden xs:inline">→</span>
+        <span class="ml-1 sm:ml-1.5">→</span>
       </a>
+
+      <!-- Collapsible Mobile Menu Hamburger Button (Visible on screens < lg) -->
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        class="lg:hidden flex items-center justify-center w-10 h-10 border border-[#141413] dark:border-[#3b3a36] bg-white dark:bg-[#181816] text-[#141413] dark:text-[#f5f4ef] rebus-stamp-shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer shrink-0"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+      >
+        <!-- 3-Bar Hamburger Icon -->
+        <svg id="hamburger-icon" class="w-5 h-5 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        <!-- Close X Icon -->
+        <svg id="close-menu-icon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Collapsible Mobile Dropdown Navigation Drawer (Vertical layout, normal text links, no proper button boxes, no contact us) -->
+  <div
+    id="mobile-menu-drawer"
+    class="hidden lg:hidden border-t border-[#e5e0d4] dark:border-[#2b2a27] bg-[#fbf9f5] dark:bg-[#121211] px-5 py-4 shadow-lg transition-all"
+  >
+    <div class="flex flex-col space-y-4">
+      <!-- Vertical Normal Text Links (Not proper buttons) -->
+      <nav class="flex flex-col space-y-2.5 text-xs font-bold uppercase tracking-wider text-[#5c5b56] dark:text-[#a8a69d]">
+        <a
+          href="/#workbench"
+          class="mobile-nav-link hover:text-[#141413] dark:hover:text-white py-1 transition-colors"
+        >
+          Workspace
+        </a>
+        <a
+          href="/#features"
+          class="mobile-nav-link hover:text-[#141413] dark:hover:text-white py-1 transition-colors"
+        >
+          Features
+        </a>
+        <a
+          href="/#guide"
+          class="mobile-nav-link hover:text-[#141413] dark:hover:text-white py-1 transition-colors"
+        >
+          Guide
+        </a>
+        <a
+          href="/#faq"
+          class="mobile-nav-link hover:text-[#141413] dark:hover:text-white py-1 transition-colors"
+        >
+          FAQs
+        </a>
+      </nav>
+
+      <!-- Generate Action CTA Button -->
+      <div class="pt-2 border-t border-[#e5e0d4] dark:border-[#2b2a27]">
+        <a
+          href="/#workbench"
+          class="mobile-nav-link w-full inline-flex items-center justify-center px-4 py-2.5 border border-[#141413] dark:border-[#f5f4ef] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5"
+        >
+          <span>Generate</span>
+          <span class="ml-1.5">→</span>
+        </a>
+      </div>
     </div>
   </div>
 </header>
+
+<script is:inline>
+  (function() {
+    const btn = document.getElementById("mobile-menu-btn");
+    const drawer = document.getElementById("mobile-menu-drawer");
+    const hamburgerIcon = document.getElementById("hamburger-icon");
+    const closeIcon = document.getElementById("close-menu-icon");
+    if (!btn || !drawer) return;
+
+    function openMenu() {
+      btn.setAttribute("aria-expanded", "true");
+      drawer.classList.remove("hidden");
+      drawer.style.display = "block";
+      if (hamburgerIcon) hamburgerIcon.classList.add("hidden");
+      if (closeIcon) closeIcon.classList.remove("hidden");
+    }
+
+    function closeMenu() {
+      btn.setAttribute("aria-expanded", "false");
+      drawer.classList.add("hidden");
+      drawer.style.display = "none";
+      if (hamburgerIcon) hamburgerIcon.classList.remove("hidden");
+      if (closeIcon) closeIcon.classList.add("hidden");
+    }
+
+    function toggleMenu() {
+      const isExpanded = btn.getAttribute("aria-expanded") === "true";
+      if (isExpanded) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close when clicking any link in drawer
+    drawer.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        closeMenu();
+      });
+    });
+
+    // Close on click outside drawer
+    document.addEventListener("click", (e) => {
+      if (!drawer.contains(e.target) && !btn.contains(e.target)) {
+        if (btn.getAttribute("aria-expanded") === "true") {
+          closeMenu();
+        }
+      }
+    });
+
+    // Close on resize to desktop (>= 1024px)
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 1024 && btn.getAttribute("aria-expanded") === "true") {
+        closeMenu();
+      }
+    });
+
+    // Close on ESC
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
+        closeMenu();
+      }
+    });
+  })();
+</script>

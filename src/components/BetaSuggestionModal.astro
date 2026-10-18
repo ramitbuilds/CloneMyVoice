@@ -4,31 +4,31 @@
 ---
 
 <!-- Floating Feedback Trigger Button (Bottom Right) -->
-<aside aria-label="Suggest a feature" class="fixed bottom-5 right-5 z-40 print:hidden">
+<aside aria-label="Suggest a feature" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 print:hidden">
   <button
     type="button"
     id="open-suggestion-modal-btn"
-    class="group inline-flex items-center space-x-2 px-3.5 py-2.5 bg-[#141413] text-white border border-[#141413] text-xs font-bold uppercase tracking-wider rebus-stamp-shadow hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer"
+    class="group inline-flex items-center justify-center space-x-0 sm:space-x-2 w-10 h-10 sm:w-auto sm:h-auto p-2.5 sm:px-3.5 sm:py-2.5 bg-[#141413] text-white border border-[#141413] text-xs font-bold uppercase tracking-wider rebus-stamp-shadow hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer"
     title="Suggest a feature for Voco Speech"
   >
-    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg class="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
     </svg>
-    <span>Suggest a feature</span>
+    <span class="hidden sm:inline">Suggest a feature</span>
   </button>
 </aside>
 
 <!-- Suggestion Modal Backdrop & Container -->
 <div
   id="suggestion-modal-backdrop"
-  class="fixed inset-0 z-50 bg-[#141413]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-200"
+  class="fixed inset-0 z-50 bg-[#141413]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-200"
   role="dialog"
   aria-modal="true"
   aria-labelledby="suggestion-modal-title"
 >
   <div
     id="suggestion-modal-box"
-    class="relative w-full max-w-lg bg-[#fbf9f5] border-2 border-[#141413] rebus-stamp-shadow p-6 sm:p-8 transform scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto"
+    class="relative w-full max-w-lg bg-[#fbf9f5] border-2 border-[#141413] rebus-stamp-shadow p-4 sm:p-6 md:p-8 transform scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto"
   >
     <!-- Modal Header -->
     <div class="flex items-start justify-between pb-4 border-b border-[#e5e0d4]">
@@ -123,7 +123,7 @@
           rows="4"
           required
           placeholder="e.g. Could you add a British narrator voice? Or let us export in FLAC/WAV format?"
-          class="w-full p-3 bg-white border border-[#141413] text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
+          class="w-full p-3 bg-white border border-[#141413] text-base sm:text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
         ></textarea>
         <div id="suggestion-empty-warning" class="hidden text-xs text-red-600 font-semibold mt-1">
           Please enter your suggestion before submitting.
@@ -131,7 +131,7 @@
       </div>
 
       <!-- Attribution Choice: Named (With Credit) vs Anonymous -->
-      <div class="p-4 bg-[#f4f0e6] border border-[#e5e0d4] space-y-3">
+      <div class="p-3 sm:p-4 bg-[#f4f0e6] border border-[#e5e0d4] space-y-3">
         <label class="block text-xs font-bold uppercase tracking-wider text-[#141413]">
           Attribution & Credit
         </label>
@@ -182,7 +182,7 @@
             type="text"
             id="suggestion-author-name"
             placeholder="e.g. Alex M. or @alexbuilds"
-            class="w-full px-3 py-2 bg-white border border-[#141413] text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
+            class="w-full px-3 py-2 bg-white border border-[#141413] text-base sm:text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
           />
           <div id="suggestion-name-empty-warning" class="hidden text-xs text-red-600 font-semibold mt-1">
             Please enter your name/handle for credit (or select Submit Anonymously).
@@ -191,11 +191,11 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+      <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-between gap-2.5 sm:gap-3 pt-2">
         <button
           type="button"
           id="skip-suggestion-btn"
-          class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#5c5b56] hover:text-[#141413] transition-colors cursor-pointer text-center"
+          class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-semibold uppercase tracking-wider text-[#5c5b56] hover:text-[#141413] transition-colors cursor-pointer text-center"
         >
           Skip for now
         </button>
@@ -203,7 +203,7 @@
         <button
           type="submit"
           id="submit-suggestion-btn"
-          class="inline-flex items-center justify-center px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
         >
           <span>Submit Suggestion</span>
           <span class="ml-1.5">→</span>

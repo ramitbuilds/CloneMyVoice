@@ -1,166 +1,109 @@
 ---
 // AboutToolSEO.astro
 // Comprehensive, high-authority 600-word on-page SEO guide for Free TTS & Free Voice Cloning
+// Each topic is individually collapsible and expandable (default collapsed, just like the FAQ section)
+
+const topics = [
+  {
+    num: "01 // Natural Synthesis",
+    tag: "Free AI TTS",
+    title: "How to Convert Text to Speech for Free",
+    p1: "Turning written words into lifelike vocal audio with Voco Speech is instant and frictionless. To convert text to speech for free, simply type or paste your script into the workspace prompt box, select one of the curated voice models such as Alba, Marius, or Cosette, and adjust the voice tone slider to dial in your preferred vocal expression.",
+    p2: "Unlike robotic legacy speech synthesizers, this modern AI text to speech engine models nuanced pitch contours, syllable stress, and fluid breathing pauses. When you press Generate Speech, neural audio tokens are rendered locally on your device in real time. You receive natural sounding text to speech with clear pronunciation, ready for immediate playback and uncompressed WAV download without waiting in server queues.",
+    keyAdvantage: "Key Advantage: Low-Latency Browser-Based Text to Speech"
+  },
+  {
+    num: "02 // Acoustic Duplication",
+    tag: "AI Voice Cloner",
+    title: "How to Clone My Voice for Free from Audio",
+    p1: "Creating a custom digital voice duplicate used to require expensive studio recordings and complex cloud training. With Voco Speech, anyone wondering how to clone my voice for free can do so in under fifteen seconds using just an ordinary laptop or mobile microphone.",
+    p2: "Simply open the voice cloning tab, record five to fifteen seconds of natural speech reading any sentence, and review the cleaned sample. An integrated acoustic expander removes room noise and trims dead silence automatically. Once you save the voice profile, your vocal timbre and pitch characteristics are encoded into a local acoustic embedding. You can then use your cloned voice profile to synthesize any written paragraph into your own voice, completely private with zero cloud uploads.",
+    keyAdvantage: "Key Advantage: Private AI Voice Cloning with Zero Data Leaks"
+  },
+  {
+    num: "03 // Content Creation",
+    tag: "AI Voiceover Generator",
+    title: "How to Generate AI Voiceovers for Content & Media",
+    p1: "Content creators, educators, video editors, and game developers frequently need high-fidelity speech for their media productions. Voco Speech functions as a versatile free AI voiceover generator, allowing you to narrate YouTube videos, educational courses, audiobooks, product walk-throughs, and accessibility voiceovers without hiring external voice actors.",
+    p2: "Because you can generate speech with standard voices or text to speech with cloned voice profiles, your audio remains consistent across hundreds of video episodes or tutorials. The built-in audio visualizer lets you inspect vocal dynamics before downloading, ensuring your voice tracks sit cleanly in video editing software such as Premiere Pro, Final Cut, or DaVinci Resolve.",
+    keyAdvantage: "Key Advantage: Studio-Grade WAV Downloads for Any Project"
+  },
+  {
+    num: "04 // Local Architecture",
+    tag: "Free Unlimited TTS",
+    title: "Unlimited Text to Speech & Voice Cloning with No Signup",
+    p1: "Traditional cloud voice platforms enforce strict character caps, credit meters, monthly paywalls, and mandatory account registration. Voco Speech breaks this paradigm by pioneering local text to speech. Our lightweight neural inference model executes directly in your browser using modern WebAssembly and WebGPU standards.",
+    p2: "Because speech generation occurs entirely on your device rather than our servers, we never incur expensive per-character cloud compute costs. This technical breakthrough enables genuine unlimited text to speech and unlimited voice cloning online free. You never have to create an account, enter a credit card, or share personal information. Your voice data stays safely stored in your browser's private database, making it the most secure, private voice cloner on the web.",
+    keyAdvantage: "Key Advantage: 100% Free Voice Cloning No Signup Required"
+  }
+];
 ---
 
-<section id="guide" class="py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<section id="guide" class="scroll-mt-16 sm:scroll-mt-20 py-12 sm:py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <!-- Section Header -->
-    <div class="max-w-3xl mb-12">
+    <div class="mb-6 sm:mb-8">
       <span class="text-xs font-mono font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
         // In-Depth Overview
       </span>
-      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#141413] mb-4">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#141413] mb-3 sm:mb-4 text-balance">
         Free TTS & Free Voice Cloning: Complete In-Browser Studio
       </h2>
-      <p class="text-base sm:text-lg text-[#5c5b56] leading-relaxed">
+      <p class="text-sm sm:text-base md:text-lg text-[#5c5b56] leading-relaxed">
         Voco Speech unites natural AI text to speech and private voice cloning into a single browser-based workspace. Here is how our client-side speech engine converts text to speech online free, duplicates voices, and generates studio-grade audio without requiring an account or cloud uploads.
       </p>
     </div>
 
-    <!-- Editorial 2x2 Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      
-      <!-- Article 01: How to Convert Text to Speech for Free -->
-      <article class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#e5e0d4]">
-            <span class="text-xs font-mono font-bold text-[#141413] uppercase tracking-wider">
-              01 // Natural Synthesis
-            </span>
-            <span class="text-[11px] font-mono text-[#5c5b56] uppercase">
-              Free AI TTS
-            </span>
+    <!-- Individual Collapsible & Expandable Topics (Default Collapsed, just like the FAQ section) -->
+    <div class="space-y-3 sm:space-y-4">
+      {topics.map((topic) => (
+        <details class="group bg-white border-2 border-[#141413] p-4 sm:p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm select-none transition-all">
+          <summary class="flex items-center justify-between font-bold text-sm sm:text-base text-[#141413] tracking-tight min-h-[40px] sm:min-h-0">
+            <div class="flex flex-col sm:flex-row sm:items-baseline sm:space-x-3 gap-0.5 sm:gap-0 pr-3">
+              <span class="text-xs font-mono font-bold text-[#5c5b56] uppercase tracking-wider shrink-0">
+                {topic.num}
+              </span>
+              <span class="text-sm sm:text-base font-bold text-[#141413] tracking-tight">
+                {topic.title}
+              </span>
+            </div>
+            <div class="flex items-center space-x-2.5 shrink-0 ml-2">
+              <span class="hidden sm:inline-block text-[11px] font-mono text-[#5c5b56] uppercase">
+                {topic.tag}
+              </span>
+              <span class="w-6 h-6 border border-[#141413] dark:border-[#3b3a36] bg-[#f4f0e6] dark:bg-[#1c1c1a] flex items-center justify-center text-[#141413] dark:text-[#f5f4ef] group-open:rotate-180 transition-transform">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </span>
+            </div>
+          </summary>
+
+          <div class="mt-3 pt-3 border-t border-[#e5e0d4] text-xs sm:text-sm text-[#5c5b56] space-y-3 leading-relaxed font-medium select-text">
+            <p>{topic.p1}</p>
+            <p>{topic.p2}</p>
+            <div class="pt-3 border-t border-[#e5e0d4] text-[11px] font-mono text-[#141413] uppercase tracking-wider font-semibold">
+              {topic.keyAdvantage}
+            </div>
           </div>
-
-          <h3 class="text-xl font-bold text-[#141413] tracking-tight mb-3">
-            How to Convert Text to Speech for Free
-          </h3>
-
-          <div class="text-sm text-[#5c5b56] space-y-3 leading-relaxed">
-            <p>
-              Turning written words into lifelike vocal audio with Voco Speech is instant and frictionless. To convert text to speech for free, simply type or paste your script into the workspace prompt box, select one of the curated voice models such as Alba, Marius, or Cosette, and adjust the voice tone slider to dial in your preferred vocal expression.
-            </p>
-            <p>
-              Unlike robotic legacy speech synthesizers, this modern AI text to speech engine models nuanced pitch contours, syllable stress, and fluid breathing pauses. When you press Generate Speech, neural audio tokens are rendered locally on your device in real time. You receive natural sounding text to speech with clear pronunciation, ready for immediate playback and uncompressed WAV download without waiting in server queues.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-[#e5e0d4] text-[11px] font-mono text-[#141413] uppercase tracking-wider font-semibold">
-          Key Advantage: Low-Latency Browser-Based Text to Speech
-        </div>
-      </article>
-
-      <!-- Article 02: How to Clone My Voice for Free -->
-      <article class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#e5e0d4]">
-            <span class="text-xs font-mono font-bold text-[#141413] uppercase tracking-wider">
-              02 // Acoustic Duplication
-            </span>
-            <span class="text-[11px] font-mono text-[#5c5b56] uppercase">
-              AI Voice Cloner
-            </span>
-          </div>
-
-          <h3 class="text-xl font-bold text-[#141413] tracking-tight mb-3">
-            How to Clone My Voice for Free from Audio
-          </h3>
-
-          <div class="text-sm text-[#5c5b56] space-y-3 leading-relaxed">
-            <p>
-              Creating a custom digital voice duplicate used to require expensive studio recordings and complex cloud training. With Voco Speech, anyone wondering how to clone my voice for free can do so in under fifteen seconds using just an ordinary laptop or mobile microphone.
-            </p>
-            <p>
-              Simply open the voice cloning tab, record five to fifteen seconds of natural speech reading any sentence, and review the cleaned sample. An integrated acoustic expander removes room noise and trims dead silence automatically. Once you save the voice profile, your vocal timbre and pitch characteristics are encoded into a local acoustic embedding. You can then use your cloned voice profile to synthesize any written paragraph into your own voice, completely private with zero cloud uploads.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-[#e5e0d4] text-[11px] font-mono text-[#141413] uppercase tracking-wider font-semibold">
-          Key Advantage: Private AI Voice Cloning with Zero Data Leaks
-        </div>
-      </article>
-
-      <!-- Article 03: How to Generate AI Voiceovers -->
-      <article class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#e5e0d4]">
-            <span class="text-xs font-mono font-bold text-[#141413] uppercase tracking-wider">
-              03 // Content Creation
-            </span>
-            <span class="text-[11px] font-mono text-[#5c5b56] uppercase">
-              AI Voiceover Generator
-            </span>
-          </div>
-
-          <h3 class="text-xl font-bold text-[#141413] tracking-tight mb-3">
-            How to Generate AI Voiceovers for Content & Media
-          </h3>
-
-          <div class="text-sm text-[#5c5b56] space-y-3 leading-relaxed">
-            <p>
-              Content creators, educators, video editors, and game developers frequently need high-fidelity speech for their media productions. Voco Speech functions as a versatile free AI voiceover generator, allowing you to narrate YouTube videos, educational courses, audiobooks, product walk-throughs, and accessibility voiceovers without hiring external voice actors.
-            </p>
-            <p>
-              Because you can generate speech with standard voices or text to speech with cloned voice profiles, your audio remains consistent across hundreds of video episodes or tutorials. The built-in audio visualizer lets you inspect vocal dynamics before downloading, ensuring your voice tracks sit cleanly in video editing software such as Premiere Pro, Final Cut, or DaVinci Resolve.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-[#e5e0d4] text-[11px] font-mono text-[#141413] uppercase tracking-wider font-semibold">
-          Key Advantage: Studio-Grade WAV Downloads for Any Project
-        </div>
-      </article>
-
-      <!-- Article 04: Unlimited Text to Speech & Voice Cloning No Signup -->
-      <article class="bg-white border-2 border-[#141413] p-6 sm:p-8 rebus-stamp-shadow flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#e5e0d4]">
-            <span class="text-xs font-mono font-bold text-[#141413] uppercase tracking-wider">
-              04 // Local Architecture
-            </span>
-            <span class="text-[11px] font-mono text-[#5c5b56] uppercase">
-              Free Unlimited TTS
-            </span>
-          </div>
-
-          <h3 class="text-xl font-bold text-[#141413] tracking-tight mb-3">
-            Unlimited Text to Speech & Voice Cloning with No Signup
-          </h3>
-
-          <div class="text-sm text-[#5c5b56] space-y-3 leading-relaxed">
-            <p>
-              Traditional cloud voice platforms enforce strict character caps, credit meters, monthly paywalls, and mandatory account registration. Voco Speech breaks this paradigm by pioneering local text to speech. Our lightweight neural inference model executes directly in your browser using modern WebAssembly and WebGPU standards.
-            </p>
-            <p>
-              Because speech generation occurs entirely on your device rather than our servers, we never incur expensive per-character cloud compute costs. This technical breakthrough enables genuine unlimited text to speech and unlimited voice cloning online free. You never have to create an account, enter a credit card, or share personal information. Your voice data stays safely stored in your browser's private database, making it the most secure, private voice cloner on the web.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-[#e5e0d4] text-[11px] font-mono text-[#141413] uppercase tracking-wider font-semibold">
-          Key Advantage: 100% Free Voice Cloning No Signup Required
-        </div>
-      </article>
-
+        </details>
+      ))}
     </div>
 
     <!-- Editorial Summary Footnote -->
-    <div class="mt-10 p-6 bg-[#f4f0e6] border-2 border-[#141413] rebus-stamp-shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="mt-8 sm:mt-10 p-4 sm:p-6 bg-[#f4f0e6] dark:bg-[#181816] border-2 border-[#141413] dark:border-[#3b3a36] rebus-stamp-shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1">
-        <span class="text-xs font-bold text-[#141413] uppercase tracking-wider block">
+        <span class="text-xs font-bold text-[#141413] dark:text-[#f5f4ef] uppercase tracking-wider block">
           Summary // The Voco Speech Commitment
         </span>
-        <p class="text-xs text-[#5c5b56] max-w-3xl leading-relaxed">
+        <p class="text-xs text-[#5c5b56] dark:text-[#a8a69d] max-w-3xl leading-relaxed">
           Whether you need a free AI voice generator for quick narration or private AI voice cloning to archive your own speaking voice, Voco Speech delivers unmatched fidelity with absolute privacy. No paywalls, no cloud retention, and no signup hurdles.
         </p>
       </div>
       <a
         href="/#workbench"
-        class="inline-flex items-center justify-center px-5 py-2.5 bg-[#141413] text-white text-xs font-bold uppercase tracking-wider border border-[#141413] rebus-stamp-shadow-sm hover:bg-neutral-800 transition-all shrink-0"
+        class="w-full sm:w-auto h-11 sm:h-auto inline-flex items-center justify-center px-5 py-2.5 bg-[#141413] text-white text-xs font-bold uppercase tracking-wider border border-[#141413] rebus-stamp-shadow-sm hover:bg-neutral-800 transition-all shrink-0 text-center"
       >
         <span>Open Workspace</span>
         <span class="ml-1.5">→</span>

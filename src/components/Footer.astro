@@ -2,20 +2,31 @@
 // Footer in Rebus editorial design style with Quick Links, Legal & Support, and contact email
 ---
 
-<footer class="border-t-2 border-[#141413] bg-[#fbf9f5] py-12 text-xs text-[#5c5b56]">
+<footer class="border-t-2 border-[#141413] bg-[#fbf9f5] py-10 sm:py-12 text-xs text-[#5c5b56]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
     
     <!-- Main Footer Grid (3 Columns) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-start">
       <!-- Col 1: Brand & Contact Email -->
-      <div class="space-y-3">
+      <div class="space-y-3 sm:col-span-2 md:col-span-1">
         <a href="/" class="inline-flex items-center space-x-2 text-[#141413] group">
-          <div class="w-7 h-7 border border-[#141413] bg-[#141413] text-white flex items-center justify-center font-bold rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
-            <svg class="w-4 h-4 text-[#fbf9f5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 10v4" />
-            </svg>
+          <div class="w-7 h-7 sm:w-8 sm:h-8 border border-[#141413] dark:border-[#3b3a36] bg-[#141413] dark:bg-[#ffffff] flex items-center justify-center rebus-stamp-shadow-sm group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all shrink-0 overflow-hidden p-0.5">
+            <img
+              src="/icon/dark_background_icon.png"
+              alt="Voco Speech"
+              class="w-full h-full object-contain dark:hidden block"
+              width="32"
+              height="32"
+            />
+            <img
+              src="/icon/white_background_icon.png"
+              alt="Voco Speech"
+              class="w-full h-full object-contain hidden dark:block"
+              width="32"
+              height="32"
+            />
           </div>
-          <span class="text-lg font-extrabold tracking-tight uppercase" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em;">
+          <span class="text-lg font-extrabold tracking-tight uppercase text-[#141413] dark:text-[#f5f4ef]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em;">
             Voco Speech
           </span>
         </a>
@@ -25,7 +36,7 @@
         <div class="pt-1">
           <a
             href="mailto:hi@vocospeech.xyz"
-            class="inline-flex items-center space-x-1.5 font-mono text-[11px] font-bold text-[#141413] hover:underline"
+            class="inline-flex items-center space-x-1.5 font-mono text-[11px] font-bold text-[#141413] hover:underline py-1"
           >
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect width="20" height="16" x="2" y="4" rx="0"></rect>
@@ -38,32 +49,32 @@
 
       <!-- Col 2: Quick Links -->
       <div>
-        <h4 class="font-bold text-xs text-[#141413] mb-3 uppercase tracking-wider">
+        <h4 class="font-bold text-xs text-[#141413] mb-2 sm:mb-3 uppercase tracking-wider">
           Quick Links
         </h4>
-        <ul class="space-y-2 text-xs font-semibold">
+        <ul class="space-y-1.5 text-xs font-semibold">
           <li>
-            <a href="/#workbench" class="hover:text-[#141413] transition-colors">
+            <a href="/#workbench" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Workspace
             </a>
           </li>
           <li>
-            <a href="/#features" class="hover:text-[#141413] transition-colors">
+            <a href="/#features" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Features
             </a>
           </li>
           <li>
-            <a href="/#guide" class="hover:text-[#141413] transition-colors">
+            <a href="/#guide" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Complete Guide
             </a>
           </li>
           <li>
-            <a href="/#faq" class="hover:text-[#141413] transition-colors">
+            <a href="/#faq" class="py-1 inline-block hover:text-[#141413] transition-colors">
               FAQs
             </a>
           </li>
           <li>
-            <a href="/about" class="hover:text-[#141413] transition-colors">
+            <a href="/about" class="py-1 inline-block hover:text-[#141413] transition-colors">
               About Us
             </a>
           </li>
@@ -72,22 +83,22 @@
 
       <!-- Col 3: Legal & Support -->
       <div>
-        <h4 class="font-bold text-xs text-[#141413] mb-3 uppercase tracking-wider">
+        <h4 class="font-bold text-xs text-[#141413] mb-2 sm:mb-3 uppercase tracking-wider">
           Legal & Support
         </h4>
-        <ul class="space-y-2 text-xs font-semibold">
+        <ul class="space-y-1.5 text-xs font-semibold">
           <li>
-            <a href="/privacy" class="hover:text-[#141413] transition-colors">
+            <a href="/privacy" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Privacy Policy
             </a>
           </li>
           <li>
-            <a href="/terms" class="hover:text-[#141413] transition-colors">
+            <a href="/terms" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Terms & Conditions
             </a>
           </li>
           <li>
-            <a href="/contact" class="hover:text-[#141413] transition-colors">
+            <a href="/contact" class="py-1 inline-block hover:text-[#141413] transition-colors">
               Contact Us
             </a>
           </li>
@@ -96,7 +107,7 @@
     </div>
 
     <!-- Bottom Line -->
-    <div class="pt-6 border-t border-[#e5e0d4] flex flex-col sm:flex-row items-center justify-between text-xs gap-2 font-medium">
+    <div class="pt-6 border-t border-[#e5e0d4] flex flex-col sm:flex-row items-center sm:items-start justify-between text-xs gap-2 font-medium text-center sm:text-left">
       <p>© 2026 Voco Speech. All rights reserved.</p>
       <p class="text-[#5c5b56]">
         Simple, instant, and free voice tools.
