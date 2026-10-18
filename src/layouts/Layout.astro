@@ -94,12 +94,30 @@ const structuredData = {
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
+    <!-- Theme Initializer (Pre-render execution to prevent theme flash; defaults to system theme) -->
+    <script is:inline>
+      (function() {
+        try {
+          const stored = localStorage.getItem('theme');
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const isDark = stored === 'dark' || (!stored && systemDark) || (stored === 'system' && systemDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fonts: Plus Jakarta Sans, Space Grotesk (for brand logo), & Instrument Serif -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800;900&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-[#fbf9f5] text-[#141413] min-h-screen selection:bg-[#141413] selection:text-white font-sans antialiased">
+  <body class="bg-[#fbf9f5] dark:bg-[#121211] text-[#141413] dark:text-[#f5f4ef] min-h-screen selection:bg-[#141413] selection:text-white dark:selection:bg-[#f5f4ef] dark:selection:text-[#121211] font-sans antialiased transition-colors duration-150">
     <!-- Accessibility Skip Link -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-[#141413] text-white border border-[#141413] text-xs font-semibold tracking-wide uppercase">
       Skip to main content

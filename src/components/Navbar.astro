@@ -1,5 +1,6 @@
 ---
 // Navbar component styled in Rebus design aesthetic
+import ThemeToggle from "./ThemeToggle.astro";
 ---
 
 <header class="sticky top-0 z-40 w-full border-b border-[#e5e0d4] bg-[#fbf9f5]/90 backdrop-blur-md">
@@ -20,7 +21,7 @@
     </div>
 
     <!-- Navigation / Actions -->
-    <div class="flex items-center space-x-6">
+    <div class="flex items-center space-x-3 sm:space-x-4 md:space-x-6">
       <nav class="hidden md:flex items-center space-x-6 text-xs font-semibold uppercase tracking-wider text-[#5c5b56]">
         <a 
           href="/#workbench" 
@@ -46,16 +47,18 @@
         >
           FAQs
         </a>
-
       </nav>
+
+      <!-- Theme Switcher (Light, Dark, System) -->
+      <ThemeToggle />
 
       <!-- Action Button (Tactile Stamp, No pill) -->
       <a
         href="/#workbench"
-        class="inline-flex items-center px-4 py-2 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+        class="inline-flex items-center px-3.5 py-2 sm:px-4 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
       >
         <span>Generate</span>
-        <span class="ml-1.5">→</span>
+        <span class="ml-1.5 hidden xs:inline">→</span>
       </a>
     </div>
   </div>

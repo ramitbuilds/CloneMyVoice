@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -64,6 +66,10 @@
   box-shadow: 1.5px 1.5px 0px #141413;
 }
 
+.rebus-stamp-shadow-lg {
+  box-shadow: 3px 3px 0px #141413;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -75,10 +81,6 @@
 
 .animate-spin {
   animation: spin 0.8s linear infinite !important;
-}
-
-.rebus-stamp-shadow-lg {
-  box-shadow: 3px 3px 0px #141413;
 }
 
 .rebus-tag {
@@ -110,4 +112,342 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ============================================================
+   DARK MODE SYSTEM (Rebus Dark Slate & Warm Ink Palette)
+   ============================================================ */
+
+html.dark {
+  color-scheme: dark;
+  background-color: #121211;
+  color: #f5f4ef;
+}
+
+html.dark body {
+  background-color: #121211;
+  color: #f5f4ef;
+}
+
+html.dark ::selection {
+  background-color: #f5f4ef;
+  color: #121211;
+}
+
+/* Dark mode focus visible */
+html.dark :focus-visible {
+  outline: 2px solid #f5f4ef !important;
+  outline-offset: 2px;
+}
+
+/* Dark mode Rebus grid */
+html.dark .rebus-grid-bg {
+  background-color: #121211 !important;
+  background-image: 
+    radial-gradient(#ffffff1a 0.75px, transparent 0.75px),
+    radial-gradient(#ffffff0a 0.75px, #121211 0.75px) !important;
+}
+
+/* Dark mode stamp shadows */
+html.dark .rebus-stamp-shadow {
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+html.dark .rebus-stamp-shadow-sm {
+  box-shadow: 1.5px 1.5px 0px #000000 !important;
+}
+
+html.dark .rebus-stamp-shadow-lg {
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+/* Global color tokens remapping in dark mode */
+html.dark .bg-\[\#fbf9f5\] {
+  background-color: #121211 !important;
+}
+
+html.dark .bg-\[\#fbf9f5\]\/90 {
+  background-color: rgba(18, 18, 17, 0.9) !important;
+}
+
+html.dark .bg-\[\#f4f0e6\] {
+  background-color: #1c1c1a !important;
+}
+
+html.dark .bg-white {
+  background-color: #181816 !important;
+}
+
+html.dark .text-\[\#141413\] {
+  color: #f5f4ef !important;
+}
+
+html.dark .text-\[\#5c5b56\] {
+  color: #a8a69d !important;
+}
+
+html.dark .text-\[\#73726c\] {
+  color: #8f8d84 !important;
+}
+
+html.dark .text-\[\#4d4d4d\] {
+  color: #bfbcb2 !important;
+}
+
+html.dark .border-\[\#e5e0d4\] {
+  border-color: #2b2a27 !important;
+}
+
+html.dark .border-\[\#141413\] {
+  border-color: #3b3a36 !important;
+}
+
+/* ============================================================
+   INTERACTIVE BUTTONS & HOVER STATES (Light & Dark Modes)
+   ============================================================ */
+
+/* Light Mode Hovers */
+a.hover\:text-\[\#141413\]:hover,
+button.hover\:text-\[\#141413\]:hover,
+[class*="hover:text-\[\#141413\]"]:hover {
+  color: #141413 !important;
+}
+
+[class*="hover:text-\[\#171717\]"]:hover {
+  color: #171717 !important;
+}
+
+button.hover\:bg-\[\#141413\]:hover,
+a.hover\:bg-\[\#141413\]:hover {
+  background-color: #141413 !important;
+  color: #ffffff !important;
+}
+
+.topic-pill:not(.is-active-topic):hover {
+  border-color: #141413 !important;
+  color: #141413 !important;
+  background-color: #f4f0e6 !important;
+}
+
+.topic-pill.is-active-topic:hover {
+  background-color: #262626 !important;
+  color: #ffffff !important;
+  border-color: #141413 !important;
+}
+
+.sample-preset-btn:hover {
+  border-color: #141413 !important;
+  color: #141413 !important;
+  background-color: #f4f0e6 !important;
+}
+
+#stop-btn:not(:disabled):hover {
+  border-color: #141413 !important;
+  color: #141413 !important;
+}
+
+#theme-toggle-btn:hover {
+  background-color: #f4f0e6 !important;
+  border-color: #141413 !important;
+}
+
+/* Dark Mode Primary Action Buttons (high-contrast warm white) */
+html.dark button.bg-\[\#141413\],
+html.dark a.bg-\[\#141413\],
+html.dark button.bg-\[\#171717\] {
+  background-color: #f5f4ef !important;
+  color: #121211 !important;
+  border-color: #f5f4ef !important;
+}
+
+html.dark button.bg-\[\#141413\]:hover,
+html.dark a.bg-\[\#141413\]:hover,
+html.dark button.bg-\[\#171717\]:hover {
+  background-color: #ffffff !important;
+  color: #121211 !important;
+  border-color: #ffffff !important;
+}
+
+html.dark button.bg-\[\#141413\] svg,
+html.dark a.bg-\[\#141413\] svg,
+html.dark button.bg-\[\#171717\] svg {
+  color: #121211 !important;
+  stroke: #121211 !important;
+}
+
+html.dark button.bg-\[\#141413\]:hover svg,
+html.dark a.bg-\[\#141413\]:hover svg {
+  color: #121211 !important;
+  stroke: #121211 !important;
+}
+
+/* Floating Suggestion Button in Dark Mode */
+html.dark #open-suggestion-modal-btn {
+  background-color: #1c1c1a !important;
+  color: #f5f4ef !important;
+  border-color: #3b3a36 !important;
+}
+
+html.dark #open-suggestion-modal-btn:hover {
+  background-color: #262624 !important;
+  border-color: #52504a !important;
+}
+
+html.dark #open-suggestion-modal-btn svg {
+  color: #f5f4ef !important;
+  stroke: #f5f4ef !important;
+}
+
+html.dark #open-suggestion-modal-btn:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Dark Mode Icon Containers (logos, features) */
+html.dark div.bg-\[\#141413\] {
+  background-color: #242422 !important;
+  border-color: #3b3a36 !important;
+  color: #f5f4ef !important;
+}
+
+html.dark div.bg-\[\#141413\] svg {
+  color: #f5f4ef !important;
+}
+
+/* Inputs, Textareas, Selects in Dark Mode */
+html.dark input[type="text"],
+html.dark select,
+html.dark textarea {
+  background-color: #1c1c1a !important;
+  color: #f5f4ef !important;
+  border-color: #3b3a36 !important;
+}
+
+html.dark input[type="text"]::placeholder,
+html.dark textarea::placeholder {
+  color: #6e6c64 !important;
+}
+
+html.dark select option,
+html.dark select optgroup {
+  background-color: #1c1c1a !important;
+  color: #f5f4ef !important;
+}
+
+/* Dark Mode Native Audio Player */
+html.dark audio::-webkit-media-controls-panel {
+  background-color: #1c1c1a;
+}
+
+/* Workbench Tab Switcher in Dark Mode */
+html.dark #tab-tts.is-active,
+html.dark #tab-clone.is-active {
+  background-color: #f5f4ef !important;
+  color: #121211 !important;
+}
+
+html.dark #tab-tts.is-active:hover,
+html.dark #tab-clone.is-active:hover {
+  background-color: #ffffff !important;
+  color: #121211 !important;
+}
+
+html.dark #tab-tts:not(.is-active),
+html.dark #tab-clone:not(.is-active) {
+  background-color: transparent !important;
+  color: #a8a69d !important;
+}
+
+html.dark #tab-tts:not(.is-active):hover,
+html.dark #tab-clone:not(.is-active):hover {
+  color: #ffffff !important;
+}
+
+/* Dark Mode Hover Color Inversions (Ensures text stays readable on dark background) */
+html.dark a.hover\:text-\[\#141413\]:hover,
+html.dark button.hover\:text-\[\#141413\]:hover,
+html.dark [class*="hover:text-\[\#141413\]"]:hover,
+html.dark [class*="hover:text-\[\#171717\]"]:hover,
+html.dark [class*="hover:text-black"]:hover {
+  color: #ffffff !important;
+}
+
+html.dark .after\:bg-\[\#141413\]::after {
+  background-color: #ffffff !important;
+}
+
+html.dark footer a:hover {
+  color: #ffffff !important;
+}
+
+html.dark main a.hover\:text-\[\#141413\]:hover {
+  color: #ffffff !important;
+}
+
+html.dark a.underline:hover {
+  color: #ffffff !important;
+}
+
+html.dark button.hover\:bg-\[\#141413\]:hover,
+html.dark a.hover\:bg-\[\#141413\]:hover,
+html.dark [class*="hover:bg-\[\#141413\]"]:hover {
+  background-color: #ffffff !important;
+  color: #121211 !important;
+  border-color: #ffffff !important;
+}
+
+html.dark [class*="hover:bg-\[\#141413\]"]:hover svg {
+  color: #121211 !important;
+  stroke: #121211 !important;
+}
+
+html.dark .sample-preset-btn:hover {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background-color: #242422 !important;
+}
+
+html.dark #stop-btn:not(:disabled):hover {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+html.dark #re-record-btn:hover {
+  color: #ffffff !important;
+}
+
+html.dark #skip-suggestion-btn:hover,
+html.dark #close-suggestion-modal-btn:hover {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Suggestion Modal Topic Pills in Dark Mode */
+html.dark .topic-pill:not(.is-active-topic):hover {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background-color: #242422 !important;
+}
+
+html.dark .topic-pill.is-active-topic {
+  background-color: #f5f4ef !important;
+  color: #121211 !important;
+  border-color: #f5f4ef !important;
+}
+
+html.dark .topic-pill.is-active-topic:hover {
+  background-color: #ffffff !important;
+  color: #121211 !important;
+  border-color: #ffffff !important;
+}
+
+/* Theme Toggle Button in Dark Mode */
+html.dark #theme-toggle-btn:hover {
+  background-color: #262624 !important;
+  border-color: #ffffff !important;
+}
+
+html.dark #theme-toggle-btn:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }

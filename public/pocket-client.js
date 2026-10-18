@@ -945,6 +945,7 @@ export class PocketTTSClient {
         };
         resize();
         window.addEventListener("resize", resize);
+        window.addEventListener("themechange", () => this.drawMicIdle());
     }
 
     drawMicIdle() {
@@ -953,9 +954,10 @@ export class PocketTTSClient {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw subtle static horizontal baseline
+        // Draw subtle static horizontal baseline (theme-adaptive)
+        const isDark = document.documentElement.classList.contains("dark");
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(20, 20, 19, 0.15)";
+        ctx.strokeStyle = isDark ? "rgba(245, 244, 239, 0.2)" : "rgba(20, 20, 19, 0.15)";
         ctx.lineWidth = 1.5;
         ctx.moveTo(0, canvas.height / 2);
         ctx.lineTo(canvas.width, canvas.height / 2);
@@ -1017,7 +1019,9 @@ export class PocketTTSClient {
                     const y = (canvas.height - barHeight) / 2;
 
                     const alpha = Math.min(1, 0.25 + percent * 0.75);
-                    ctx.fillStyle = `rgba(20, 20, 19, ${alpha})`;
+                    const isDark = document.documentElement.classList.contains("dark");
+                    const rgb = isDark ? "245, 244, 239" : "20, 20, 19";
+                    ctx.fillStyle = `rgba(${rgb}, ${alpha})`;
                     ctx.fillRect(x, y, barWidth, barHeight);
                 }
             };
@@ -1556,6 +1560,8 @@ export class PocketTTSClient {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const isAudioPlaying = this.el.audioPlayback && !this.el.audioPlayback.paused && !this.el.audioPlayback.ended;
+            const isDark = document.documentElement.classList.contains("dark");
+            const baseRgb = isDark ? "245, 244, 239" : "23, 23, 23";
 
             // When the user plays audio in the player, show real-time reacting frequency bars
             if (this.playbackAnalyser && isAudioPlaying) {
@@ -1566,7 +1572,7 @@ export class PocketTTSClient {
 
                 for (let i = 0; i < bufferLength; i++) {
                     const barHeight = (dataArray[i] / 255) * canvas.height * 0.9;
-                    ctx.fillStyle = `rgba(23, 23, 23, ${0.2 + (dataArray[i] / 255) * 0.8})`;
+                    ctx.fillStyle = `rgba(${baseRgb}, ${0.2 + (dataArray[i] / 255) * 0.8})`;
 
                     ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
                     x += barWidth;
@@ -1575,7 +1581,7 @@ export class PocketTTSClient {
                 // Smooth sine wave animation showing audio is actively being generated
                 phase += 0.08;
                 ctx.beginPath();
-                ctx.strokeStyle = "rgba(23, 23, 23, 0.7)";
+                ctx.strokeStyle = isDark ? "rgba(245, 244, 239, 0.75)" : "rgba(23, 23, 23, 0.7)";
                 ctx.lineWidth = 2;
                 for (let x = 0; x < canvas.width; x += 4) {
                     const y = (canvas.height / 2) + Math.sin((x * 0.03) + phase) * 12 * Math.sin(phase * 0.5);
@@ -1586,7 +1592,7 @@ export class PocketTTSClient {
             } else {
                 // Static subtle resting baseline
                 ctx.beginPath();
-                ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
+                ctx.strokeStyle = isDark ? "rgba(245, 244, 239, 0.15)" : "rgba(0, 0, 0, 0.08)";
                 ctx.lineWidth = 1;
                 ctx.moveTo(0, canvas.height / 2);
                 ctx.lineTo(canvas.width, canvas.height / 2);

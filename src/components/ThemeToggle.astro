@@ -1,0 +1,88 @@
+---
+// ThemeToggle.astro: Single icon button toggling Light and Dark mode (no text labels).
+// Default theme is automatically determined by the user's system OS preference.
+---
+
+<button
+  type="button"
+  id="theme-toggle-btn"
+  class="w-9 h-9 border border-[#141413] bg-white text-[#141413] dark:bg-[#181816] dark:border-[#3b3a36] dark:text-[#f5f4ef] flex items-center justify-center rebus-stamp-shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer shrink-0"
+  aria-label="Toggle light or dark theme"
+  title="Toggle theme"
+>
+  <!-- Sun Icon (Visible in Light Mode) -->
+  <svg
+    id="theme-icon-sun"
+    class="w-4 h-4 block dark:hidden"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+  </svg>
+
+  <!-- Moon Icon (Visible in Dark Mode) -->
+  <svg
+    id="theme-icon-moon"
+    class="w-4 h-4 hidden dark:block"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
+</button>
+
+<script is:inline>
+  (function () {
+    const toggleBtn = document.getElementById("theme-toggle-btn");
+    if (!toggleBtn) return;
+
+    toggleBtn.addEventListener("click", () => {
+      const isCurrentlyDark = document.documentElement.classList.contains("dark");
+      const nextTheme = isCurrentlyDark ? "light" : "dark";
+
+      if (nextTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+
+      try {
+        localStorage.setItem("theme", nextTheme);
+      } catch (e) {}
+
+      window.dispatchEvent(
+        new CustomEvent("themechange", { detail: { theme: nextTheme, isDark: nextTheme === "dark" } })
+      );
+    });
+
+    // If user hasn't explicitly set a preference, follow the OS system theme
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", (e) => {
+      try {
+        if (!localStorage.getItem("theme")) {
+          if (e.matches) {
+            document.documentElement.classList.add("dark");
+            document.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+          window.dispatchEvent(
+            new CustomEvent("themechange", { detail: { theme: e.matches ? "dark" : "light", isDark: e.matches } })
+          );
+        }
+      } catch (err) {}
+    });
+  })();
+</script>
