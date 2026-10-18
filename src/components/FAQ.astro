@@ -3,75 +3,75 @@
 const faqs = [
   {
     q: "What is VocoSpeech?",
-    a: "VocoSpeech is a free browser-based AI text-to-speech (TTS) and voice cloning platform that runs neural speech synthesis directly on your device. It allows creators, writers, educators, and developers to convert text to speech online for free and clone realistic speaking voices from a short audio sample—all with 100% privacy, zero cloud uploads, and no signup or account required."
+    a: "VocoSpeech is a free browser-based text-to-speech and voice cloning studio. It runs neural speech synthesis on your local device using WebAssembly. You can generate speech from written text and clone realistic speaking voices from a short microphone sample while keeping your audio completely private on your hardware."
   },
   {
     q: "Is VocoSpeech completely free and unlimited?",
-    a: "Yes, VocoSpeech provides free unlimited TTS and voice cloning with no hidden paywalls, character caps, or subscription tiers. Because our neural audio model runs on-device using your browser's WebAssembly and WebGPU engine rather than costly remote servers, you can generate as many voiceovers, audiobooks, and cloned voice lines as you need."
+    a: "Yes. VocoSpeech provides free unlimited text to speech and voice cloning. Because the speech synthesis model runs directly inside your browser using WebAssembly and WebGPU, generation requires zero remote server computing. You can generate as many voiceovers, podcast segments, and cloned voice lines as your project demands."
   },
   {
     q: "How can I convert text to speech online for free?",
-    a: "To convert text to speech for free, simply type or paste your script into the text prompt box on the VocoSpeech workspace, select one of the built-in natural voices (or your own cloned voice), fine-tune the Voice Tone slider, and click 'Generate Speech'. Your synthesized audio will stream and play back immediately without any account registration."
+    a: "Paste your script into the prompt box, pick a voice persona such as Alba or Marius, set your preferred tone, and click Generate Speech. Your synthesized audio generates locally and starts playing immediately."
   },
   {
     q: "How can I clone my voice for free?",
-    a: "You can clone your voice for free in three simple steps: switch to the Voice Cloning tab, click 'Record with Microphone', speak a 10 to 20 second sample into your mic (or read the practice sentence), name your custom voice profile, and save it. Your cloned voice profile is instantly saved in your local library and ready to speak any text prompt."
+    a: "Switch to the Voice Cloning tab, click Record with Microphone, and speak 10 to 20 seconds of natural speech. Check the recording in the preview player, enter a name for your profile, and save it. Your cloned voice profile saves to your local browser storage and appears in the voice selector immediately."
   },
   {
     q: "What is the difference between AI text-to-speech and voice cloning?",
-    a: "AI text-to-speech (TTS) converts written words into spoken audio using pre-trained synthetic or studio voice personas. Voice cloning, on the other hand, is an advanced form of TTS that samples your real human voice recording to replicate your unique pitch, timbre, vocal cadence, and accent, allowing you to generate new speech in your own voice."
+    a: "Standard AI text to speech synthesizes written text using pre-trained studio voice models. Voice cloning samples your real speaking recording to map your pitch, tone, and cadence, allowing you to generate new voice tracks that sound like your own voice."
   },
   {
     q: "Can I use AI text-to-speech without signing up?",
-    a: "Yes. VocoSpeech offers free text to speech with no signup required. You never have to provide an email address, create an account, or enter a credit card. You can start synthesizing natural sounding speech immediately upon visiting the website."
+    a: "Yes. VocoSpeech requires no account or registration. You can open the studio and start converting text to speech immediately upon visiting the website."
   },
   {
     q: "Can I clone my voice without paying or creating an account?",
-    a: "Absolutely. VocoSpeech is a free voice cloner with no signup, no credit cards, and no token costs. You can clone your voice from audio in seconds and start generating realistic voiceovers instantly with zero barrier to entry."
+    a: "Yes. VocoSpeech functions as a free voice cloner with no subscription tiers or token purchases. You can record a short sample, save your profile, and start generating custom voice tracks right away."
   },
   {
     q: "How does AI voice cloning work?",
-    a: "When you record a short voice sample, our client-side neural acoustic model analyzes your vocal frequencies, formant dynamics, and pitch characteristics. It extracts these acoustic embeddings into a lightweight reference profile that guides the text-to-speech engine to synthesize new sentences matching your voice's tone and rhythm."
+    a: "When you record a voice sample, the client-side acoustic model analyzes your vocal frequencies and pitch patterns. It builds a lightweight reference embedding that guides the speech engine to synthesize new sentences matching your vocal tone and rhythm."
   },
   {
     q: "Can I generate unlimited AI voiceovers for free?",
-    a: "Yes. VocoSpeech delivers unlimited text to speech and unlimited voice cloning without daily quotas or monthly character restrictions. Whether you are generating 30-second shorts or full chapter narrations, you can produce unlimited free AI voiceovers directly in your browser."
+    a: "Yes. VocoSpeech provides unlimited speech generation. You can produce 30-second video shorts or complete audio chapters directly in your browser without hitting character caps or daily limits."
   },
   {
     q: "Can I use VocoSpeech on my phone?",
-    a: "Yes, VocoSpeech is fully responsive and works on modern mobile browsers (including Safari on iOS and Chrome on Android) that support WebAssembly and audio recording permissions. You can record voice clips, convert text to speech, and preview audio on both smartphones and tablets."
+    a: "Yes. VocoSpeech works on modern mobile browsers including Safari on iOS and Chrome on Android. You can record voice clips, synthesize speech, and download WAV audio on both smartphones and tablets."
   },
   {
     q: "Is VocoSpeech's AI voice cloning private and secure?",
-    a: "Yes, VocoSpeech is built with a privacy-first architecture. Unlike conventional cloud voice generators that send your biometric voice recordings to remote data centers, VocoSpeech processes your audio and text 100% locally on your machine. Your voice samples, custom profiles, and generated audio never touch external servers."
+    a: "Yes. VocoSpeech processes all speech generation and voice cloning locally on your hardware. Your voice recordings, custom profiles, and synthesized speech files stay on your device and are never sent to external servers."
   },
   {
     q: "Does VocoSpeech store my voice recordings or generated audio?",
-    a: "No. VocoSpeech does not store your voice recordings or generated speech on any server or cloud database. Custom voice profiles are saved exclusively in your browser's private local storage (IndexedDB / LocalStorage), which only you can access or clear."
+    a: "No. Voice recordings and generated speech are never stored on external databases. Custom voice profiles are saved exclusively in your browser local storage, which you can clear at any time."
   },
   {
     q: "Can I download AI-generated speech and cloned voice recordings?",
-    a: "Yes. Once your voiceover is generated, click the 'Download Voice' button on the audio player to save a high-quality audio file (WAV) directly to your device. You can freely store, edit, or archive your downloaded audio tracks."
+    a: "Yes. Once your speech generation finishes, click Download Voice to save an uncompressed WAV audio file directly to your device for editing or archiving."
   },
   {
     q: "Can I use AI-generated voices for YouTube videos, Reels, and commercial projects?",
-    a: "Yes. You retain ownership of the audio content you generate on VocoSpeech. You are free to use your downloaded voiceovers in YouTube videos, TikToks, Instagram Reels, podcasts, explainer videos, educational courses, and commercial media projects without royalties or licensing fees."
+    a: "Yes. You own the audio files you generate with VocoSpeech. You can use your downloaded voiceovers in YouTube videos, social media reels, podcasts, educational courses, and commercial media projects without royalty fees."
   },
   {
     q: "What languages does VocoSpeech support?",
-    a: "VocoSpeech supports multiple languages, including English (Natural), German (Deutsch), Italian (Italiano), Portuguese (Português), and Spanish (Español). You can select your target language directly from the language selector in the text-to-speech studio."
+    a: "VocoSpeech supports English, German, Italian, Portuguese, and Spanish. You can select your target language directly from the language dropdown in the workspace."
   },
   {
     q: "How much audio is needed to clone my voice?",
-    a: "You only need 10 to 20 seconds of clear, natural speech to clone your voice. Our modern zero-shot acoustic model extracts vocal characteristics from short recordings without requiring hours of training audio or specialized studio setups."
+    a: "You only need 10 to 20 seconds of clear speech to create a voice profile. The zero-shot acoustic model extracts pitch and timbre from brief microphone recordings without requiring long training sessions."
   },
   {
     q: "Can I clone someone else's voice with AI?",
-    a: "You may only clone someone's voice if you have their explicit, informed permission to do so. VocoSpeech strictly prohibits unauthorized voice cloning, deepfakes, celebrity impersonation, or generating audio intended to deceive, defraud, or harass others."
+    a: "You may only clone someone's voice with their explicit consent. VocoSpeech prohibits unauthorized voice duplication, impersonation, or creating deceptive audio content."
   },
   {
     q: "Does VocoSpeech work directly in my browser?",
-    a: "Yes. VocoSpeech is an entirely browser-based text-to-speech and voice cloning web application. It requires no software downloads, plugins, Python dependencies, or complex installations—just open your browser, write your script, and generate speech instantly."
+    a: "Yes. VocoSpeech runs completely inside modern web browsers via WebAssembly. You do not need to install software, extensions, or background packages. Simply open the website, enter your text, and generate speech immediately."
   }
 ];
 
