@@ -1,6 +1,6 @@
 // Kyutai Pocket TTS (100M) ONNX Web Worker with CacheStorage support
 console.log("Pocket TTS Worker Starting...");
-self.postMessage({ type: "status", status: "Ready", state: "idle" });
+self.postMessage({ type: "status", status: "Loading speech engine...", state: "loading" });
 
 let ort = null;
 
@@ -92,7 +92,7 @@ async function fetchWithCache(url, progressLabel = "") {
         state: "loading",
     });
 
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
     if (!response.ok) {
         throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
     }
@@ -489,8 +489,46 @@ function parseVoiceStatesBin(buffer) {
 }
 
 async function encodeVoiceAudio(audioData) {
+    if (!audioData?.length) {
+        throw new Error("The voice recording is empty. Please record a voice sample first.");
+    }
+
+    // Encoder attention grows quadratically. Overlap provides context without exceeding WASM memory.
+    const coreFrames = 32;
+    const contextFrames = 16;
+    const maxWindowFrames = coreFrames + 2 * contextFrames;
+    const totalFrames = Math.ceil(audioData.length / currentSamplesPerFrame);
+    if (totalFrames <= maxWindowFrames) {
+        return encodeVoiceAudioWindow(audioData);
+    }
+
+    const data = new Float32Array(totalFrames * currentConditioningDim);
+    for (let frame = 0; frame < totalFrames; frame += coreFrames) {
+        const startFrame = Math.max(0, frame - contextFrames);
+        const endFrame = Math.min(totalFrames, frame + coreFrames + contextFrames);
+        const audio = audioData.subarray(
+            startFrame * currentSamplesPerFrame,
+            Math.min(audioData.length, endFrame * currentSamplesPerFrame),
+        );
+        const embedding = await encodeVoiceAudioWindow(audio);
+        const offset = (frame - startFrame) * currentConditioningDim;
+        const count = Math.min(coreFrames, totalFrames - frame) * currentConditioningDim;
+        if (embedding.shape[2] !== currentConditioningDim || offset + count > embedding.data.length) {
+            throw new Error("The voice encoder returned an unexpected feature shape.");
+        }
+        data.set(embedding.data.subarray(offset, offset + count), frame * currentConditioningDim);
+    }
+    return { data, shape: [1, totalFrames, currentConditioningDim] };
+}
+
+async function encodeVoiceAudioWindow(audioData) {
     const input = createTensor("float32", audioData, [1, 1, audioData.length]);
-    const outputs = await mimiEncoderSession.run({ audio: input });
+    let outputs;
+    try {
+        outputs = await mimiEncoderSession.run({ audio: input });
+    } catch (err) {
+        throw new Error(`Voice sample encoding failed (engine error: ${String(err)}). Please reload the page and try again.`);
+    }
     const embeddings = outputs[mimiEncoderSession.outputNames[0]];
 
     let dims = embeddings.dims.slice();
@@ -781,7 +819,42 @@ async function loadBundle(language, { initialLoad = false } = {}) {
     }
 }
 
-self.onmessage = async (e) => {
+// ONNX sessions cannot run concurrently; serialize preparation and generation.
+let messageQueue = Promise.resolve();
+let stopVersion = 0;
+self.onmessage = (e) => {
+    if (e.data.type === "stop") {
+        stopVersion++;
+        return handleMessage(e);
+    }
+    const version = stopVersion;
+    messageQueue = messageQueue.then(() => {
+        if (e.data.type === "generate" && version !== stopVersion) return;
+        return handleMessage(e, version);
+    });
+    return messageQueue;
+};
+
+async function loadCustomVoice({ voiceId, voiceName, embedding, audio }) {
+    let emb = customVoicesEmbeddings.get(voiceId) || embedding;
+    if (!emb && audio) {
+        emb = await encodeVoiceAudio(audio);
+    }
+    if (!emb) {
+        throw new Error(`No saved audio or embedding for voice ID: ${voiceId}. Please record the voice again.`);
+    }
+    if (!(emb.data instanceof Float32Array)) {
+        emb.data = new Float32Array(emb.data);
+    }
+    await ensureCustomVoiceCached({
+        voiceId,
+        embedding: emb,
+        statusText: `Preparing voice (${voiceName || voiceId})...`,
+    });
+    currentVoiceName = voiceId;
+}
+
+async function handleMessage(e, version = stopVersion) {
     const { type, data } = e.data;
 
     try {
@@ -803,6 +876,11 @@ self.onmessage = async (e) => {
             if (isGenerating) {
                 return;
             }
+            if (data.customVoice) {
+                await loadCustomVoice(data.customVoice);
+                postMessage({ type: "voice_set", voiceName: currentVoiceName });
+            }
+            if (version !== stopVersion) return;
             await startGeneration(data.text, data.voice || currentVoiceName, data.temperature || 0.7);
             return;
         }
@@ -867,25 +945,7 @@ self.onmessage = async (e) => {
         }
 
         if (type === "load_custom_voice") {
-            const { voiceId, voiceName, embedding, audio } = data;
-            let emb = embedding;
-            if (!emb && audio) {
-                emb = await encodeVoiceAudio(audio);
-            }
-            if (emb) {
-                if (!(emb.data instanceof Float32Array)) {
-                    emb.data = new Float32Array(emb.data);
-                }
-                customVoicesEmbeddings.set(voiceId, emb);
-                customVoiceEmbedding = emb;
-                await ensureCustomVoiceCached({
-                    voiceId,
-                    embedding: emb,
-                    force: false,
-                    statusText: `Preparing voice (${voiceName || voiceId})...`
-                });
-            }
-            currentVoiceName = voiceId;
+            await loadCustomVoice(data);
             postMessage({ type: "voice_set", voiceName: currentVoiceName });
             postMessage({ type: "status", status: "Ready", state: "idle" });
             return;
@@ -914,7 +974,7 @@ self.onmessage = async (e) => {
         console.error("Worker error:", err);
         postMessage({ type: "error", error: err.toString() });
     }
-};
+}
 
 async function startGeneration(text, voiceName, temperature = 0.7) {
     isGenerating = true;
@@ -939,6 +999,7 @@ async function startGeneration(text, voiceName, temperature = 0.7) {
         await runGenerationPipeline(voiceName, chunks, framesAfterEos, temperature);
     } catch (err) {
         console.error("Generation error:", err);
+        isGenerating = false;
         postMessage({ type: "error", error: err.toString() });
     } finally {
         if (isGenerating) {

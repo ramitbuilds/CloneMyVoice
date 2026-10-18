@@ -272,10 +272,11 @@
   let selectedTopic = "";
   let modalOpen = false;
 
-  // Global function to open suggestion modal from anywhere (e.g. generation finished, button clicked)
+  // Manual feedback stays available; automatic feedback waits for a quiet moment.
   window.openSuggestionModal = function(options = {}) {
     if (modalOpen) return;
     modalOpen = true;
+    sessionStorage.setItem("voco_suggestion_shown", "true");
 
     // Reset view
     if (form) form.classList.remove("hidden");
@@ -556,20 +557,36 @@
     });
   }
 
-  // Proactive website usage prompt (triggers after ~45s if user hasn't seen it or submitted)
-  setTimeout(() => {
-    const alreadySubmitted = sessionStorage.getItem("voco_suggestion_submitted");
-    const dismissedAt = sessionStorage.getItem("voco_suggestion_dismissed");
-    const dismissedRecently = dismissedAt && (Date.now() - Number(dismissedAt) < 15 * 60 * 1000);
+  let lastActivity = Date.now();
+  for (const event of ["pointerdown", "keydown", "input"]) {
+    document.addEventListener(event, () => { lastActivity = Date.now(); }, { passive: true });
+  }
 
-    if (!alreadySubmitted && !dismissedRecently && !modalOpen) {
-      window.openSuggestionModal({
-        trigger: "idle_usage",
-        title: "Enjoying Voco Speech?",
-        subtitle: "You've been exploring the app! Take 10 seconds to share what feature or voice you'd like us to build next."
-      });
+  // Wait two minutes and at least 30 seconds of quiet; never interrupt a voice task.
+  function offerFeedbackWhenIdle() {
+    const alreadySubmitted = sessionStorage.getItem("voco_suggestion_submitted");
+    const alreadyShown = sessionStorage.getItem("voco_suggestion_shown");
+    const dismissed = sessionStorage.getItem("voco_suggestion_dismissed");
+    if (alreadySubmitted || alreadyShown || dismissed || modalOpen) return;
+
+    const studio = window.pocketTTS;
+    const busy = document.hidden ||
+      (studio && (!studio.isWorkerReady || studio.isGenerating || studio.isRecording)) ||
+      [...document.querySelectorAll("audio")].some(audio => !audio.paused && !audio.ended) ||
+      document.activeElement?.matches("input, textarea, select, [contenteditable='true']");
+    if (busy) lastActivity = Date.now();
+    if (busy || Date.now() - lastActivity < 30_000) {
+      setTimeout(offerFeedbackWhenIdle, 5_000);
+      return;
     }
-  }, 45000);
+
+    window.openSuggestionModal({
+      trigger: "idle_usage",
+      title: "Enjoying Voco Speech?",
+      subtitle: "You've been exploring the app! Take 10 seconds to share what feature or voice you'd like us to build next."
+    });
+  }
+  setTimeout(offerFeedbackWhenIdle, 120_000);
 })();
 </script>
 

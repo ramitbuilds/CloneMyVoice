@@ -52,149 +52,6 @@ export async function resampleTo24kMono(audioBuffer) {
     return rendered.getChannelData(0);
 }
 
-// Audio Biquad Filter single pass helper
-function biquadPass(samples, b0, b1, b2, a1, a2) {
-    const out = new Float32Array(samples.length);
-    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-    for (let i = 0; i < samples.length; i++) {
-        const x0 = samples[i];
-        const y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
-        out[i] = y0;
-        x2 = x1;
-        x1 = x0;
-        y2 = y1;
-        y1 = y0;
-    }
-    return out;
-}
-
-// Zero-phase Butterworth High-Pass Filter (eliminates DC offset, 50/60Hz AC hum, desk thumps with ZERO phase distortion)
-export function zeroPhaseHighPass(samples, sampleRate = 24000, cutoff = 80) {
-    const Q = 0.7071;
-    const omega = 2 * Math.PI * cutoff / sampleRate;
-    const alpha = Math.sin(omega) / (2 * Q);
-    const cosw = Math.cos(omega);
-
-    const b0 = (1 + cosw) / 2;
-    const b1 = -(1 + cosw);
-    const b2 = (1 + cosw) / 2;
-    const a0 = 1 + alpha;
-    const a1 = -2 * cosw;
-    const a2 = 1 - alpha;
-
-    const nb0 = b0 / a0;
-    const nb1 = b1 / a0;
-    const nb2 = b2 / a0;
-    const na1 = a1 / a0;
-    const na2 = a2 / a0;
-
-    // Forward pass
-    const fwd = biquadPass(samples, nb0, nb1, nb2, na1, na2);
-    // Backward pass
-    fwd.reverse();
-    const bwd = biquadPass(fwd, nb0, nb1, nb2, na1, na2);
-    bwd.reverse();
-    return bwd;
-}
-
-// Studio-Grade Instant Voice Cleaner & Background Noise Remover
-// 1. Zero-phase 80Hz rumble/hum elimination
-// 2. Smooth downward expander / gate for dead silence during speech pauses
-// 3. Leading and trailing room silence trimming
-// 4. Peak normalization (-1.0 dBFS)
-export function cleanVoiceAudio(samples, sampleRate = 24000) {
-    if (!samples || samples.length === 0) return samples;
-
-    // 1. High-Pass filter at 80Hz (zero-phase)
-    const hpFiltered = zeroPhaseHighPass(samples, sampleRate, 80);
-
-    // 2. RMS Energy calculation in 20ms frames
-    const frameSize = Math.floor(sampleRate * 0.02); // 480 samples @ 24k
-    const numFrames = Math.floor(hpFiltered.length / frameSize);
-    if (numFrames < 5) return hpFiltered;
-
-    const frameEnergies = new Float32Array(numFrames);
-    for (let f = 0; f < numFrames; f++) {
-        let sumSq = 0;
-        const start = f * frameSize;
-        for (let i = 0; i < frameSize; i++) {
-            const v = hpFiltered[start + i];
-            sumSq += v * v;
-        }
-        frameEnergies[f] = Math.sqrt(sumSq / frameSize);
-    }
-
-    // Estimate room noise floor from the quietest 15% of frames
-    const sortedEnergies = Float32Array.from(frameEnergies).sort();
-    const noiseFloorIdx = Math.max(0, Math.floor(numFrames * 0.15));
-    const estimatedNoiseFloor = sortedEnergies[noiseFloorIdx];
-
-    // Speech threshold: minimum energy required to be recognized as vocal phonemes
-    const speechThreshold = Math.max(0.008, estimatedNoiseFloor * 2.8);
-
-    // 3. Smooth Downward Expander (Noise Gate): Creates dead silence between spoken words without clipping
-    const gated = new Float32Array(hpFiltered.length);
-    let gain = 1.0;
-    const attackCoeff = Math.exp(-1 / (sampleRate * 0.008)); // 8ms fast attack to preserve vocal onset
-    const releaseCoeff = Math.exp(-1 / (sampleRate * 0.060)); // 60ms smooth release to prevent gating flutter
-
-    for (let f = 0; f < numFrames; f++) {
-        const energy = frameEnergies[f];
-        let targetGain = 1.0;
-        if (energy < speechThreshold) {
-            const ratio = Math.max(0, energy / speechThreshold);
-            // Attenuates down by ~26 dB in silent intervals
-            targetGain = 0.03 + 0.97 * Math.pow(ratio, 2);
-        }
-
-        const start = f * frameSize;
-        for (let i = 0; i < frameSize; i++) {
-            const coeff = targetGain > gain ? attackCoeff : releaseCoeff;
-            gain = coeff * gain + (1 - coeff) * targetGain;
-            gated[start + i] = hpFiltered[start + i] * gain;
-        }
-    }
-    for (let i = numFrames * frameSize; i < hpFiltered.length; i++) {
-        gated[i] = hpFiltered[i] * gain;
-    }
-
-    // 4. Trim leading and trailing empty silence safely
-    let trimmed = gated;
-    let startFrame = 0;
-    while (startFrame < numFrames && frameEnergies[startFrame] < speechThreshold * 1.1) {
-        startFrame++;
-    }
-    let endFrame = numFrames - 1;
-    while (endFrame > startFrame && frameEnergies[endFrame] < speechThreshold * 1.1) {
-        endFrame--;
-    }
-
-    if (startFrame < endFrame) {
-        const paddingSamples = Math.floor(sampleRate * 0.15);
-        const startIndex = Math.max(0, startFrame * frameSize - paddingSamples);
-        const endIndex = Math.min(gated.length, (endFrame + 1) * frameSize + paddingSamples);
-        if (endIndex > startIndex && endIndex - startIndex > sampleRate * 1.0) {
-            trimmed = gated.slice(startIndex, endIndex);
-        }
-    }
-
-    // 5. Peak Normalization to -1.0 dBFS (0.89) to feed optimal dynamic range into neural latent encoder
-    let maxVal = 0;
-    for (let i = 0; i < trimmed.length; i++) {
-        const abs = Math.abs(trimmed[i]);
-        if (abs > maxVal) maxVal = abs;
-    }
-
-    if (maxVal > 0.001) {
-        const scale = 0.89 / maxVal;
-        for (let i = 0; i < trimmed.length; i++) {
-            trimmed[i] *= scale;
-        }
-    }
-
-    return trimmed;
-}
-
 // Local Storage for Private Cloned Voices (IndexedDB)
 export class VoiceStorage {
     static DB_NAME = "VocoSpeechDB";
@@ -283,6 +140,8 @@ export class PocketTTSClient {
         this.worker = null;
         this.isGenerating = false;
         this.isWorkerReady = false;
+        this.engineError = false;
+        this.preparedVoices = new Set();
 
         this.availableVoices = [];
         this.currentVoice = "alba";
@@ -360,6 +219,7 @@ export class PocketTTSClient {
             modelProgressText: document.getElementById("model-progress-text"),
             modelStatusDot: document.getElementById("model-status-dot"),
             modelStatusText: document.getElementById("model-status-text"),
+            retryEngineBtn: document.getElementById("retry-engine-btn"),
 
             // Stats / Metrics
             statStatus: document.getElementById("stat-status"),
@@ -452,6 +312,7 @@ export class PocketTTSClient {
             this.el.languageSelect.addEventListener("change", (e) => {
                 const newLang = e.target.value;
                 if (newLang !== this.currentLanguage && this.worker) {
+                    this.setEngineAvailability(false);
                     this.updateStatus("Changing language...", "loading");
                     this.worker.postMessage({
                         type: "set_language",
@@ -504,6 +365,7 @@ export class PocketTTSClient {
         if (this.el.generateBtn) {
             this.el.generateBtn.addEventListener("click", () => this.handleGenerate());
         }
+        this.el.retryEngineBtn?.addEventListener("click", () => this.initWorker());
         if (this.el.stopBtn) {
             this.el.stopBtn.addEventListener("click", () => this.handleStop());
         }
@@ -589,16 +451,28 @@ export class PocketTTSClient {
     }
 
     initWorker() {
-        this.updateStatus("Ready", "idle");
-        this.setButtonState("ready", "Generate Speech");
+        this.worker?.terminate();
+        this.isWorkerReady = false;
+        this.engineError = false;
+        this.preparedVoices = new Set();
+        this.setEngineAvailability(false);
+        this.engineStatus = "Loading speech engine...";
+        this.updateStatus(this.engineStatus, "loading");
 
         this.worker = new Worker("./inference-worker.js", { type: "module" });
+        this.worker.onerror = (event) => {
+            this.engineError = true;
+            this.isGenerating = false;
+            this.setEngineAvailability(false);
+            this.updateStatus(`Speech engine failed to start: ${event.message || "Please retry."}`, "error");
+        };
 
         this.worker.onmessage = async (e) => {
             const { type, data, error, status, state, text, voices, defaultVoice, voiceName, language, file, percent, fromCache, voiceId, embedding } = e.data;
 
             switch (type) {
                 case "status":
+                    if (!this.isWorkerReady) this.engineStatus = status;
                     this.updateStatus(status, state);
                     break;
 
@@ -620,23 +494,22 @@ export class PocketTTSClient {
 
                 case "bundle_loaded":
                     this.currentLanguage = language;
+                    this.preparedVoices.clear();
                     if (e.data.sampleRate) this.currentSampleRate = e.data.sampleRate;
+                    this.setEngineAvailability(true);
                     break;
 
                 case "loaded":
-                    this.isWorkerReady = true;
-                    this.hideProgressBar();
-                    if (this.pendingGeneration) {
-                        const pending = this.pendingGeneration;
-                        this.pendingGeneration = null;
-                        this.startActualGeneration(pending.text, pending.voice, pending.temperature);
-                    } else {
-                        this.setButtonState("ready", "Generate Speech");
-                    }
+                    this.setEngineAvailability(true);
                     break;
 
                 case "voice_encoded":
+                    this.preparedVoices.add(voiceId);
                     await this.onVoiceEncoded({ voiceId, voiceName, embedding });
+                    break;
+
+                case "voice_set":
+                    this.preparedVoices.add(voiceName);
                     break;
 
                 case "generation_started":
@@ -656,11 +529,15 @@ export class PocketTTSClient {
 
                 case "error":
                     console.error("Worker Error:", error);
+                    if (!this.isWorkerReady) {
+                        this.engineError = true;
+                        this.setEngineAvailability(false);
+                    }
                     this.updateStatus(`Error: ${error}`, "error");
                     this.setButtonState("ready", "Generate Speech");
                     this.isGenerating = false;
                     if (this.el.saveCloneBtn) {
-                        this.el.saveCloneBtn.disabled = false;
+                        this.el.saveCloneBtn.disabled = !this.isWorkerReady;
                     }
                     if (this.el.saveCloneBtnContent) {
                         this.el.saveCloneBtnContent.classList.remove("hidden");
@@ -681,13 +558,20 @@ export class PocketTTSClient {
     }
 
     handleDownloadProgress(file, percent, fromCache) {
-        // Intentionally silent background fetch
+        if (fromCache || this.isWorkerReady) return;
+        this.engineStatus = `Downloading speech engine (${percent}%)...`;
+        this.updateStatus(this.engineStatus, "loading");
     }
 
-    hideProgressBar() {
-        if (this.el.modelProgressContainer) {
-            this.el.modelProgressContainer.classList.add("hidden");
-        }
+    setEngineAvailability(ready) {
+        this.isWorkerReady = ready;
+        if (ready) this.engineError = false;
+        if (this.el.recordBtn) this.el.recordBtn.disabled = !ready && !this.isRecording;
+        if (this.el.saveCloneBtn) this.el.saveCloneBtn.disabled = !ready;
+        if (this.el.languageSelect) this.el.languageSelect.disabled = !ready;
+        this.el.modelProgressContainer?.classList.toggle("hidden", ready);
+        this.el.retryEngineBtn?.classList.toggle("hidden", !this.engineError);
+        this.setButtonState(this.isGenerating ? "generating" : "ready");
     }
 
     async updateVoiceDropdown(selectedVoiceId) {
@@ -742,6 +626,7 @@ export class PocketTTSClient {
     }
 
     async handleGenerate() {
+        if (!this.isWorkerReady) return;
         const text = this.el.textInput?.value?.trim();
         if (!text) {
             alert("Please type or paste some text first.");
@@ -754,45 +639,14 @@ export class PocketTTSClient {
 
         let targetVoice = this.el.voiceSelect?.value || this.currentVoice || "alba";
 
-        // Check if targetVoice is a saved custom voice
-        const customVoice = await VoiceStorage.getVoice(targetVoice);
-        if (customVoice && this.worker && this.isWorkerReady) {
-            let audioFloats = null;
-            if (customVoice.audioData) {
-                audioFloats = new Float32Array(customVoice.audioData);
-            }
-            this.worker.postMessage({
-                type: "load_custom_voice",
-                data: {
-                    voiceId: customVoice.id,
-                    voiceName: customVoice.name,
-                    embedding: customVoice.embedding,
-                    audio: audioFloats,
-                }
-            });
-        }
-
         const temperature = parseFloat(this.el.temperatureSlider?.value || "0.7");
-
-        if (!this.isWorkerReady) {
-            this.pendingGeneration = { text, voice: targetVoice, temperature };
-            this.setButtonState("loading", "Getting ready...");
-            this.updateStatus("Getting ready...", "loading");
-            this.worker.postMessage({
-                type: "generate",
-                data: {
-                    text,
-                    voice: targetVoice,
-                    temperature,
-                }
-            });
-            return;
-        }
 
         await this.startActualGeneration(text, targetVoice, temperature);
     }
 
     async startActualGeneration(text, targetVoice, temperature) {
+        if (!this.isWorkerReady) return;
+        const voice = this.preparedVoices?.has(targetVoice) ? null : await VoiceStorage.getVoice(targetVoice);
         this.isGenerating = true;
         this.currentGenerationChunks = [];
         this.setButtonState("generating", "Generating speech...");
@@ -812,13 +666,18 @@ export class PocketTTSClient {
             data: {
                 text,
                 voice: targetVoice,
+                customVoice: voice ? {
+                    voiceId: voice.id,
+                    voiceName: voice.name,
+                    embedding: voice.embedding,
+                    audio: !voice.embedding && voice.audioData ? new Float32Array(voice.audioData) : null,
+                } : null,
                 temperature: temperature ?? parseFloat(this.el.temperatureSlider?.value || "0.7"),
             }
         });
     }
 
     handleStop() {
-        this.pendingGeneration = null;
         if (this.worker && (this.isGenerating || !this.isWorkerReady)) {
             this.worker.postMessage({ type: "stop" });
         }
@@ -888,16 +747,6 @@ export class PocketTTSClient {
             this.updateStatus("Voice ready! Press play below to listen.", "idle");
             if (this.el.statStatus) this.el.statStatus.textContent = "Ready";
 
-            // Trigger suggestion popup after generation so users can share feedback
-            setTimeout(() => {
-                if (window.openSuggestionModal) {
-                    window.openSuggestionModal({
-                        trigger: "generation",
-                        title: "How did that voice sound?",
-                        subtitle: "Help shape Voco Speech. What improvements, voices, or tweaks would you suggest?"
-                    });
-                }
-            }, 1200);
         }
     }
 
@@ -1062,11 +911,12 @@ export class PocketTTSClient {
     }
 
     async startRecording() {
+        if (!this.isWorkerReady) return;
         try {
             const audioConstraints = {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
                 channelCount: 1,
             };
             const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
@@ -1162,10 +1012,7 @@ export class PocketTTSClient {
             // Resample to 24000Hz mono Float32Array
             const rawAudio = await resampleTo24kMono(decodedBuffer);
 
-            // Instant Background Noise Remover & Acoustic Cleaner
-            // Strips room hum, fan noise, desk rumble, and silence before sending to AI encoder
-            const cleanedAudio = cleanVoiceAudio(rawAudio, SAMPLE_RATE);
-            const durationSec = cleanedAudio.length / SAMPLE_RATE;
+            const durationSec = rawAudio.length / SAMPLE_RATE;
 
             if (durationSec < 1.0) {
                 alert("Recording was too short. Please speak for at least 2 to 3 seconds so the computer can capture your voice.");
@@ -1176,10 +1023,10 @@ export class PocketTTSClient {
                 return;
             }
 
-            this.pendingClonedAudio = cleanedAudio;
+            this.pendingClonedAudio = rawAudio;
 
-            // Create preview WAV blob of the cleaned audio
-            const previewBlob = encodeWAV(cleanedAudio, SAMPLE_RATE);
+            // Preview the same captured sample used for cloning.
+            const previewBlob = encodeWAV(rawAudio, SAMPLE_RATE);
             this.pendingPreviewBlob = previewBlob;
 
             if (this.clonedVoiceAudioUrl) {
@@ -1193,7 +1040,7 @@ export class PocketTTSClient {
             }
 
             if (this.el.cloneSampleDuration) {
-                this.el.cloneSampleDuration.textContent = `${durationSec.toFixed(1)}s clean sample`;
+                this.el.cloneSampleDuration.textContent = `${durationSec.toFixed(1)}s sample`;
             }
 
             // Suggest a default voice name based on existing saved voices count
@@ -1246,6 +1093,7 @@ export class PocketTTSClient {
     }
 
     async handleSaveClonedVoice() {
+        if (!this.isWorkerReady) return;
         if (!this.pendingClonedAudio) {
             alert("Please record your voice first.");
             return;
@@ -1309,21 +1157,12 @@ export class PocketTTSClient {
 
             this.updateStatus(`Voice "${saveRecord.name}" saved safely on this device`, "idle");
 
-            setTimeout(() => {
-                if (window.openSuggestionModal) {
-                    window.openSuggestionModal({
-                        trigger: "voice_saved",
-                        title: "Voice Profile Created",
-                        subtitle: "What other voice cloning options or settings would you like to see?"
-                    });
-                }
-            }, 1200);
         } catch (storageErr) {
             console.error("IndexedDB save error:", storageErr);
             alert("Could not save voice to browser storage: " + storageErr.message);
         } finally {
             if (this.el.saveCloneBtn) {
-                this.el.saveCloneBtn.disabled = false;
+                this.el.saveCloneBtn.disabled = !this.isWorkerReady;
             }
             if (this.el.saveCloneBtnContent) {
                 this.el.saveCloneBtnContent.classList.remove("hidden");
@@ -1338,8 +1177,8 @@ export class PocketTTSClient {
             }
         }
 
-        // Send to Web Worker to encode acoustic features in the background if worker is ready
-        if (this.worker && this.isWorkerReady) {
+        // The worker queues encoding behind startup, so saved clones are warmed up immediately.
+        if (this.worker) {
             this.worker.postMessage({
                 type: "encode_voice",
                 data: {
@@ -1507,6 +1346,15 @@ export class PocketTTSClient {
 
     setButtonState(state, text) {
         if (!this.el.generateBtn) return;
+        if (!this.isWorkerReady) {
+            this.el.generateBtn.disabled = true;
+            this.el.btnContent?.classList.remove("hidden");
+            if (this.el.btnContent) this.el.btnContent.style.display = "";
+            this.el.btnLoader?.classList.add("hidden");
+            if (this.el.btnLoader) this.el.btnLoader.style.display = "none";
+            if (this.el.btnText) this.el.btnText.textContent = this.engineError ? "Model unavailable" : "Loading model...";
+            return;
+        }
         if (state === "loading" || state === "generating") {
             this.el.generateBtn.disabled = true;
             if (this.el.btnContent) {
@@ -1534,6 +1382,9 @@ export class PocketTTSClient {
     }
 
     updateStatus(status, state = "idle") {
+        if (!this.isWorkerReady && this.el.modelStatusText) {
+            this.el.modelStatusText.textContent = status;
+        }
         if (this.el.statStatus) {
             this.el.statStatus.textContent = status;
         }

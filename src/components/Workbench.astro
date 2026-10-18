@@ -42,12 +42,15 @@
         </div>
       </div>
 
-      <!-- Silent Background Model Container (Kept hidden so DOM references exist safely) -->
-      <div id="model-progress-container" class="hidden">
-        <span id="model-status-dot"></span>
-        <span id="model-status-text"></span>
-        <span id="model-progress-text"></span>
-        <div id="model-progress-bar"></div>
+      <div id="model-progress-container" class="mb-6 p-4 border border-[#e5e0d4] bg-[#fbf9f5]" role="status" aria-live="polite">
+        <div class="flex items-center gap-2">
+          <span id="model-status-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span id="model-status-text" class="text-sm font-semibold">Loading speech engine...</span>
+        </div>
+        <p class="mt-2 text-xs text-[#5c5b56]">Speech generation and voice recording will unlock when the model is ready. You can write your script while it loads.</p>
+        <button id="retry-engine-btn" type="button" class="hidden mt-3 px-3 py-2 border border-[#141413] text-xs font-bold cursor-pointer">Retry download</button>
+        <span id="model-progress-text" class="hidden"></span>
+        <div id="model-progress-bar" class="hidden"></div>
       </div>
 
       <!-- PANEL 1: Text-to-Speech Settings -->
@@ -195,12 +198,17 @@
           </div>
 
           <!-- Microphone Action Bar -->
+          <p id="recording-tip" class="text-xs text-[#5c5b56] leading-relaxed">
+            For best cloning results, use a good microphone and record in a quiet space with minimal background noise.
+          </p>
           <div class="p-3.5 sm:p-4 bg-white border border-[#141413] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rebus-stamp-shadow-sm">
             <div class="flex items-center space-x-3 w-full sm:w-auto">
               <button
                 id="record-btn"
                 type="button"
-                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 sm:py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                aria-describedby="recording-tip"
+                disabled
+                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 sm:py-2.5 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -306,6 +314,7 @@
             <div class="flex items-center space-x-3">
               <button
                 id="save-clone-btn"
+              disabled
                 type="button"
                 class="w-full sm:w-auto relative min-w-[140px] h-11 sm:h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
               >
@@ -437,13 +446,14 @@
             <button
               id="generate-btn"
               type="button"
+              disabled
               class="w-full sm:w-auto relative min-w-[175px] h-11 sm:h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
               <span id="btn-content" class="inline-flex items-center space-x-2">
                 <svg id="btn-icon" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                <span id="btn-text">Generate Speech</span>
+                <span id="btn-text">Loading model...</span>
               </span>
               <span id="btn-loader" class="hidden items-center justify-center">
                 <svg class="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
