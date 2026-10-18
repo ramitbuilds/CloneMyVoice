@@ -1,4 +1,6 @@
+# Robots.txt for Voco Speech (https://www.vocospeech.xyz)
 User-agent: *
 Allow: /
 
-Sitemap: https://vocospeech.xyz/sitemap.xml
+# Sitemap Index
+Sitemap: https://www.vocospeech.xyz/sitemap.xml

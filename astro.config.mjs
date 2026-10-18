@@ -24,6 +24,7 @@ function crossOriginIsolationPlugin() {
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://www.vocospeech.xyz',
   vite: {
     plugins: [tailwindcss(), crossOriginIsolationPlugin()],
   },
