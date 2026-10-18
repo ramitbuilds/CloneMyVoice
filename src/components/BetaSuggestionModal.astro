@@ -64,7 +64,7 @@
     </div>
 
     <!-- Main Suggestion Form -->
-    <form id="suggestion-form" class="mt-5 space-y-5">
+    <form id="suggestion-form" novalidate class="mt-5 space-y-5">
       <!-- Quick Category Picker -->
       <div>
         <label class="block text-[11px] font-bold uppercase tracking-wider text-[#5c5b56] mb-2">
@@ -74,35 +74,35 @@
           <button
             type="button"
             data-topic="Voice Quality"
-            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] transition-colors cursor-pointer"
           >
             Voice Quality
           </button>
           <button
             type="button"
             data-topic="New Voices"
-            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] transition-colors cursor-pointer"
           >
             New Voices & Accents
           </button>
           <button
             type="button"
             data-topic="Voice Cloning"
-            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] transition-colors cursor-pointer"
           >
             Voice Cloning
           </button>
           <button
             type="button"
             data-topic="New Feature"
-            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] transition-colors cursor-pointer"
           >
             New Feature
           </button>
           <button
             type="button"
             data-topic="Speed / Performance"
-            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
+            class="topic-pill px-2.5 py-1 text-xs border border-[#e5e0d4] bg-white text-[#5c5b56] transition-colors cursor-pointer"
           >
             Speed / Performance
           </button>
@@ -115,7 +115,7 @@
           <label for="suggestion-text" class="text-xs font-bold uppercase tracking-wider text-[#141413]">
             Your Suggestion <span class="text-red-600">*</span>
           </label>
-          <span class="text-[11px] text-[#5c5b56]">Optional, but appreciated</span>
+          <span class="text-[11px] text-[#5c5b56]">Tell us what to improve</span>
         </div>
         <textarea
           id="suggestion-text"
@@ -125,6 +125,9 @@
           placeholder="e.g. Could you add a British narrator voice? Or let us export in FLAC/WAV format?"
           class="w-full p-3 bg-white border border-[#141413] text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
         ></textarea>
+        <div id="suggestion-empty-warning" class="hidden text-xs text-red-600 font-semibold mt-1">
+          Please enter your suggestion before submitting.
+        </div>
       </div>
 
       <!-- Attribution Choice: Named (With Credit) vs Anonymous -->
@@ -173,7 +176,7 @@
         <!-- Name / Handle Input (Visible when Credited is selected) -->
         <div id="attribution-name-wrapper" class="pt-1">
           <label for="suggestion-author-name" class="block text-[11px] font-bold uppercase tracking-wider text-[#5c5b56] mb-1">
-            Your Name, Handle, or Email (for credit)
+            Your Name, Handle, or Email (for credit) <span class="text-red-600">*</span>
           </label>
           <input
             type="text"
@@ -181,6 +184,9 @@
             placeholder="e.g. Alex M. or @alexbuilds"
             class="w-full px-3 py-2 bg-white border border-[#141413] text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
           />
+          <div id="suggestion-name-empty-warning" class="hidden text-xs text-red-600 font-semibold mt-1">
+            Please enter your name/handle for credit (or select Submit Anonymously).
+          </div>
         </div>
       </div>
 
@@ -222,8 +228,9 @@
         </p>
       </div>
 
-      <div class="pt-2 text-[11px] text-[#5c5b56]">
-        Direct questions or ideas? You can also email us anytime at
+      <div class="pt-2 text-[11px] text-[#5c5b56] leading-relaxed">
+        Direct questions or ideas?<br />
+        You can also email us anytime at:<br />
         <a href="mailto:hi@vocospeech.xyz" class="font-bold underline text-[#141413] hover:text-black">
           hi@vocospeech.xyz
         </a>
@@ -358,30 +365,59 @@
       const topic = pill.getAttribute("data-topic");
       if (selectedTopic === topic) {
         selectedTopic = "";
-        pill.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
-        pill.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+        pill.classList.remove("is-active-topic");
       } else {
-        topicPills.forEach((p) => {
-          p.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
-          p.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
-        });
+        topicPills.forEach((p) => p.classList.remove("is-active-topic"));
         selectedTopic = topic;
-        pill.classList.add("bg-[#141413]", "text-white", "border-[#141413]");
-        pill.classList.remove("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
+        pill.classList.add("is-active-topic");
       }
     });
   });
 
+  // =========================================================================
+  // GOOGLE FORMS INTEGRATION
+  // Connected Google Form for Voco Speech Suggestions:
+  // - Suggestion: entry.280084409 (Paragraph)
+  // - Name / Credit: entry.1838810261 (Short answer: filled if credited, left empty if anonymous)
+  // - Topic: entry.1046555020 (Short answer: selected category)
+  // =========================================================================
+  const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdH5kDXP_5UhJCN1bOhm2h3ayqer3XZdw_uDK7GLdUyP_igaQ/formResponse"; 
+  const GOOGLE_FORM_ENTRIES = {
+    suggestion: "entry.280084409",
+    authorName: "entry.1838810261",
+    topic: "entry.1046555020",
+  };
+
   // Attribution radio toggle
   function updateAttributionState() {
     const isCredited = creditedRadio && creditedRadio.checked;
+    const creditedCard = creditedRadio?.closest("label");
+    const anonCard = anonRadio?.closest("label");
+
+    if (creditedCard && anonCard) {
+      if (isCredited) {
+        creditedCard.classList.remove("border-[#e5e0d4]");
+        creditedCard.classList.add("border-[#141413]");
+        anonCard.classList.remove("border-[#141413]");
+        anonCard.classList.add("border-[#e5e0d4]");
+      } else {
+        anonCard.classList.remove("border-[#e5e0d4]");
+        anonCard.classList.add("border-[#141413]");
+        creditedCard.classList.remove("border-[#141413]");
+        creditedCard.classList.add("border-[#e5e0d4]");
+      }
+    }
+
     if (nameWrapper) {
       if (isCredited) {
         nameWrapper.classList.remove("hidden");
         if (authorNameInput) authorNameInput.disabled = false;
       } else {
         nameWrapper.classList.add("hidden");
-        if (authorNameInput) authorNameInput.disabled = true;
+        if (authorNameInput) {
+          authorNameInput.disabled = true;
+          authorNameInput.value = "";
+        }
       }
     }
   }
@@ -389,27 +425,77 @@
   if (creditedRadio) creditedRadio.addEventListener("change", updateAttributionState);
   if (anonRadio) anonRadio.addEventListener("change", updateAttributionState);
 
-  // Form submission
+  // Form submission: INSTANT OPTIMISTIC SUCCESS
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const textVal = document.getElementById("suggestion-text")?.value?.trim();
-      if (!textVal) return;
+      const textInput = document.getElementById("suggestion-text");
+      const warningEl = document.getElementById("suggestion-empty-warning");
+      const textVal = textInput?.value?.trim() || "";
+
+      if (!textVal) {
+        if (textInput) {
+          textInput.focus();
+          textInput.classList.remove("border-[#141413]");
+          textInput.classList.add("border-2", "border-red-600");
+        }
+        if (warningEl) warningEl.classList.remove("hidden");
+        return;
+      }
+
+      if (warningEl) warningEl.classList.add("hidden");
+      if (textInput) {
+        textInput.classList.remove("border-2", "border-red-600");
+        textInput.classList.add("border-[#141413]");
+      }
 
       const isCredited = creditedRadio && creditedRadio.checked;
-      const authorName = isCredited ? (authorNameInput?.value?.trim() || "Anonymous Creator") : "Anonymous";
+      const authorName = isCredited ? (authorNameInput?.value?.trim() || "") : "";
+      const nameWarningEl = document.getElementById("suggestion-name-empty-warning");
+
+      // When "Credit My Name" is selected, require the author's name/handle
+      if (isCredited && !authorName) {
+        if (authorNameInput) {
+          authorNameInput.focus();
+          authorNameInput.classList.remove("border-[#141413]");
+          authorNameInput.classList.add("border-2", "border-red-600");
+        }
+        if (nameWarningEl) nameWarningEl.classList.remove("hidden");
+        return;
+      }
+
+      if (nameWarningEl) nameWarningEl.classList.add("hidden");
+      if (authorNameInput) {
+        authorNameInput.classList.remove("border-2", "border-red-600");
+        authorNameInput.classList.add("border-[#141413]");
+      }
 
       const suggestionData = {
         id: "sug_" + Date.now(),
         text: textVal,
-        topic: selectedTopic || "General",
+        topic: selectedTopic || "",
         attribution: isCredited ? "credited" : "anonymous",
-        authorName: authorName,
+        authorName: authorName || "Anonymous",
         createdAt: new Date().toISOString(),
         url: window.location.href,
       };
 
-      // Store persistently in localStorage
+      // 1. INSTANT SUCCESS: Transition UI immediately without waiting for network!
+      form.classList.add("hidden");
+      if (successView) successView.classList.remove("hidden");
+
+      if (successDesc) {
+        if (isCredited && authorName) {
+          successDesc.textContent = `Your suggestion has been logged under "${authorName}". If we build it, you will be credited in our public release changelog!`;
+        } else {
+          successDesc.textContent = "Your anonymous suggestion has been logged. Thank you for helping make Voco Speech better!";
+        }
+      }
+
+      // Mark suggestion submitted in this session
+      sessionStorage.setItem("voco_suggestion_submitted", "true");
+
+      // Store in local browser backup
       try {
         const stored = JSON.parse(localStorage.getItem("voco_user_suggestions") || "[]");
         stored.push(suggestionData);
@@ -418,29 +504,55 @@
         console.warn("Could not save to localStorage:", err);
       }
 
-      // Mark suggestion submitted in this session
-      sessionStorage.setItem("voco_suggestion_submitted", "true");
-
-      // Show success screen
-      form.classList.add("hidden");
-      if (successView) successView.classList.remove("hidden");
-
-      if (successDesc) {
-        if (isCredited && authorName !== "Anonymous Creator") {
-          successDesc.textContent = `Your suggestion has been logged under "${authorName}". If we build it, you will be credited in our public release changelog!`;
-        } else {
-          successDesc.textContent = "Your anonymous suggestion has been logged. Thank you for helping make Voco Speech better!";
+      // 2. BACKGROUND FIRE-AND-FORGET: Deliver to Google Forms without blocking the user
+      if (GOOGLE_FORM_ACTION_URL && GOOGLE_FORM_ACTION_URL.includes("formResponse")) {
+        const formPayload = new URLSearchParams();
+        if (GOOGLE_FORM_ENTRIES.suggestion) {
+          formPayload.append(GOOGLE_FORM_ENTRIES.suggestion, textVal);
         }
+        if (GOOGLE_FORM_ENTRIES.authorName && authorName) {
+          formPayload.append(GOOGLE_FORM_ENTRIES.authorName, authorName);
+        }
+        if (GOOGLE_FORM_ENTRIES.topic && selectedTopic) {
+          formPayload.append(GOOGLE_FORM_ENTRIES.topic, selectedTopic);
+        }
+
+        fetch(GOOGLE_FORM_ACTION_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formPayload.toString(),
+        }).catch((postErr) => {
+          console.warn("Background Google Form delivery note:", postErr);
+        });
       }
 
       // Reset fields
       form.reset();
       selectedTopic = "";
-      topicPills.forEach((p) => {
-        p.classList.remove("bg-[#141413]", "text-white", "border-[#141413]");
-        p.classList.add("bg-white", "text-[#5c5b56]", "border-[#e5e0d4]");
-      });
+      topicPills.forEach((p) => p.classList.remove("is-active-topic"));
       updateAttributionState();
+    });
+  }
+
+  // Clear warning when typing in suggestion text
+  const suggestionTextEl = document.getElementById("suggestion-text");
+  if (suggestionTextEl) {
+    suggestionTextEl.addEventListener("input", () => {
+      const warningEl = document.getElementById("suggestion-empty-warning");
+      if (warningEl) warningEl.classList.add("hidden");
+      suggestionTextEl.classList.remove("border-2", "border-red-600");
+      suggestionTextEl.classList.add("border-[#141413]");
+    });
+  }
+
+  // Clear name warning when typing in name input
+  if (authorNameInput) {
+    authorNameInput.addEventListener("input", () => {
+      const nameWarningEl = document.getElementById("suggestion-name-empty-warning");
+      if (nameWarningEl) nameWarningEl.classList.add("hidden");
+      authorNameInput.classList.remove("border-2", "border-red-600");
+      authorNameInput.classList.add("border-[#141413]");
     });
   }
 
@@ -460,3 +572,23 @@
   }, 45000);
 })();
 </script>
+
+<style>
+  .topic-pill {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .topic-pill:not(.is-active-topic):hover {
+    border-color: #141413;
+    color: #141413;
+  }
+  .topic-pill.is-active-topic {
+    background-color: #141413 !important;
+    color: #ffffff !important;
+    border-color: #141413 !important;
+  }
+  .topic-pill.is-active-topic:hover {
+    background-color: #262626 !important;
+    color: #ffffff !important;
+    border-color: #141413 !important;
+  }
+</style>
