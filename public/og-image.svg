@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <!-- Warm Paper Background -->
+  <rect width="1200" height="630" fill="#fbf9f5" />
+  
+  <!-- Subtle Grid Texture -->
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#e5e0d4" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)" />
+
+  <!-- Outer Frame -->
+  <rect x="36" y="36" width="1128" height="558" stroke="#141413" stroke-width="4" fill="none" />
+  <rect x="44" y="44" width="1112" height="542" stroke="#e5e0d4" stroke-width="1.5" fill="none" />
+
+  <!-- Brand Stamp Header -->
+  <g transform="translate(80, 80)">
+    <!-- Tactile Mark -->
+    <rect x="0" y="0" width="56" height="56" fill="#141413" stroke="#141413" stroke-width="2" />
+    <path d="M28 14v28M36 19v18M20 23v10M44 26v4M12 26v4" stroke="#fbf9f5" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Brand Title -->
+    <text x="76" y="38" font-family="'Space Grotesk', -apple-system, sans-serif" font-weight="900" font-size="28" fill="#141413" letter-spacing="-0.03em">VOCO SPEECH</text>
+    
+    <!-- Studio Tag -->
+    <rect x="330" y="14" width="130" height="28" fill="#f4f0e6" stroke="#141413" stroke-width="1.5" />
+    <text x="395" y="33" font-family="'Courier New', monospace" font-weight="700" font-size="13" fill="#141413" text-anchor="middle" letter-spacing="0.08em">AI AUDIO LAB</text>
+  </g>
+
+  <!-- Main Headline -->
+  <g transform="translate(80, 230)">
+    <text x="0" y="40" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="800" font-size="64" fill="#141413" letter-spacing="-0.03em">
+      Free TTS &amp; Free Voice Cloning
+    </text>
+    <text x="0" y="110" font-family="Georgia, serif" font-weight="400" font-style="italic" font-size="44" fill="#5c5b56">
+      Instant, private AI voice generator in your browser.
+    </text>
+  </g>
+
+  <!-- Value Propositions / Supporting Keywords -->
+  <g transform="translate(80, 420)">
+    <text x="0" y="0" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="500" font-size="22" fill="#5c5b56" line-height="1.5">
+      Convert text to speech online free or clone your voice from a short audio clip.
+    </text>
+    <text x="0" y="36" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="500" font-size="22" fill="#5c5b56" line-height="1.5">
+      Zero cloud uploads • 100% private neural synthesis • Unlimited generations • No signup required.
+    </text>
+  </g>
+
+  <!-- Bottom Badges / Stamps -->
+  <g transform="translate(80, 520)">
+    <rect x="0" y="0" width="180" height="34" fill="#ffffff" stroke="#141413" stroke-width="2" />
+    <text x="90" y="22" font-family="'Courier New', monospace" font-weight="700" font-size="12" fill="#141413" text-anchor="middle">BROWSER-BASED AI</text>
+
+    <rect x="200" y="0" width="170" height="34" fill="#ffffff" stroke="#141413" stroke-width="2" />
+    <text x="285" y="22" font-family="'Courier New', monospace" font-weight="700" font-size="12" fill="#141413" text-anchor="middle">UNLIMITED TTS</text>
+
+    <rect x="390" y="0" width="170" height="34" fill="#ffffff" stroke="#141413" stroke-width="2" />
+    <text x="475" y="22" font-family="'Courier New', monospace" font-weight="700" font-size="12" fill="#141413" text-anchor="middle">ZERO CLOUD DATA</text>
+
+    <rect x="580" y="0" width="150" height="34" fill="#ffffff" stroke="#141413" stroke-width="2" />
+    <text x="655" y="22" font-family="'Courier New', monospace" font-weight="700" font-size="12" fill="#141413" text-anchor="middle">NO SIGNUP</text>
+
+    <!-- Domain Pill -->
+    <text x="1040" y="24" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="18" fill="#141413" text-anchor="end">vocospeech.xyz</text>
+  </g>
+</svg>

@@ -212,6 +212,9 @@
               Click record and speak anything or read the sentence.
             </p>
           </div>
+          <p class="text-[11px] text-[#73726c]">
+            If you are using our service you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-[#141413] transition-colors">terms</a>.
+          </p>
 
           <!-- Live Mic Audio Spectrum Visualizer -->
           <div class="p-4 bg-white border border-[#141413]">
@@ -297,27 +300,32 @@
           </div>
 
           <!-- Save Button -->
-          <div class="pt-2 flex items-center space-x-3">
-            <button
-              id="save-clone-btn"
-              type="button"
-              class="relative min-w-[140px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-            >
-              <span id="save-clone-btn-content" class="inline-flex items-center space-x-2">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
-                <span id="save-clone-btn-text">Save Voice</span>
-              </span>
-              <span id="save-clone-btn-loader" class="hidden items-center justify-center">
-                <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </span>
-            </button>
+          <div class="pt-2 space-y-2">
+            <div class="flex items-center space-x-3">
+              <button
+                id="save-clone-btn"
+                type="button"
+                class="relative min-w-[140px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              >
+                <span id="save-clone-btn-content" class="inline-flex items-center space-x-2">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                  <span id="save-clone-btn-text">Save Voice</span>
+                </span>
+                <span id="save-clone-btn-loader" class="hidden items-center justify-center">
+                  <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <p class="text-[11px] text-[#73726c]">
+              If you are using our service you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-[#141413] transition-colors">terms</a>.
+            </p>
           </div>
 
           <!-- Success Banner (hidden by default) -->
@@ -421,36 +429,42 @@
         </div>
 
         <!-- Action Buttons (No Pills) -->
-        <div class="mt-8 flex items-center space-x-3">
-          <!-- CTA button -->
-          <button
-            id="generate-btn"
-            type="button"
-            class="relative min-w-[175px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-          >
-            <span id="btn-content" class="inline-flex items-center space-x-2">
-              <svg id="btn-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-              <span id="btn-text">Generate Speech</span>
-            </span>
-            <span id="btn-loader" class="hidden items-center justify-center">
-              <svg class="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </span>
-          </button>
+        <div class="mt-8 space-y-2.5">
+          <div class="flex items-center space-x-3">
+            <!-- CTA button -->
+            <button
+              id="generate-btn"
+              type="button"
+              class="relative min-w-[175px] h-10 px-6 border border-[#141413] text-xs font-bold uppercase tracking-wider bg-[#141413] text-white hover:bg-neutral-800 transition-all rebus-stamp-shadow-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none inline-flex items-center justify-center cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+            >
+              <span id="btn-content" class="inline-flex items-center space-x-2">
+                <svg id="btn-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <span id="btn-text">Generate Speech</span>
+              </span>
+              <span id="btn-loader" class="hidden items-center justify-center">
+                <svg class="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
 
-          <!-- Stop Button -->
-          <button
-            id="stop-btn"
-            type="button"
-            disabled
-            class="px-4 py-2.5 border border-[#e5e0d4] text-xs font-bold uppercase tracking-wider bg-transparent text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Stop
-          </button>
+            <!-- Stop Button -->
+            <button
+              id="stop-btn"
+              type="button"
+              disabled
+              class="px-4 py-2.5 border border-[#e5e0d4] text-xs font-bold uppercase tracking-wider bg-transparent text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Stop
+            </button>
+          </div>
+
+          <p class="text-[11px] text-[#73726c]">
+            If you are using our service you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-[#141413] transition-colors">terms</a>.
+          </p>
         </div>
 
         <!-- Output Section: Spectrum Visualizer, Audio Player & Download -->

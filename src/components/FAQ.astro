@@ -1,108 +1,84 @@
 ---
-// Frequently Asked Questions in clean Rebus style (no emojis, no pills)
+// Frequently Asked Questions in clean Rebus style with Schema.org FAQPage structured data
+const faqs = [
+  {
+    q: "How to convert text to speech for free without signing up?",
+    a: "Simply type or paste your text into the Voco Speech prompt box, select a natural voice persona, adjust the voice tone slider, and click Generate Speech. Your text is synthesized immediately inside your browser without creating an account or paying fees."
+  },
+  {
+    q: "How to clone my voice for free from an audio sample?",
+    a: "Click '+ Clone a Voice' in the workspace, record a 5 to 15 second audio sample speaking clearly into your microphone, listen to the preview, and name your voice. The AI extracts your vocal features into a private local profile you can immediately use for speech generation."
+  },
+  {
+    q: "Is Voco Speech really free unlimited TTS and voice cloning?",
+    a: "Yes. Because neural audio inference runs locally on your device via WebAssembly and WebGPU instead of expensive cloud GPU servers, you can generate unlimited speech and clone voices without subscriptions, character limits, or credit cards."
+  },
+  {
+    q: "Why is private browser-based voice cloning safer than cloud voice tools?",
+    a: "Most online voice generators upload your vocal recordings and text scripts to remote servers where they may be logged or retained. Voco Speech performs all acoustic processing locally on your computer or phone. Zero audio or text data ever leaves your device."
+  },
+  {
+    q: "How to generate AI voiceovers for YouTube, podcasts, and video editing?",
+    a: "Generate your desired narration using either standard voices or your cloned voice profile, preview it with the built-in player, and click 'Download Audio'. You will instantly receive a high-quality, uncompressed WAV file ready to import directly into Premiere Pro, DaVinci Resolve, or Final Cut."
+  },
+  {
+    q: "What are the rules and ethical guidelines for voice cloning?",
+    a: "You must have explicit consent from the speaker to clone their voice. Cloning celebrity voices, impersonating third parties, or creating misleading or fraudulent audio is strictly prohibited."
+  }
+];
+
+const faqStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map((item) => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": item.a
+    }
+  }))
+};
 ---
 
 <section id="faq" class="py-16 md:py-24 border-t border-[#e5e0d4] bg-[#fbf9f5]">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="mb-12">
-      <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
+      <span class="text-xs font-mono font-bold text-[#5c5b56] uppercase tracking-wider block mb-2">
         FAQ // Questions & Answers
       </span>
       <h2 class="text-3xl font-bold tracking-tight text-[#141413]">
         Frequently Asked Questions
       </h2>
+      <p class="text-sm text-[#5c5b56] mt-2">
+        Common questions about free text to speech, private voice cloning, and audio exports.
+      </p>
     </div>
 
     <div class="space-y-4">
-      <!-- FAQ 1 -->
-      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
-        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-bold text-[#5c5b56]">01.</span>
-            <span>Is this really free to use?</span>
-          </div>
-          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </summary>
-        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
-          Yes. There are no subscriptions, credits, or hidden fees. Generate as much speech as you like.
-        </p>
-      </details>
-
-      <!-- FAQ 2 -->
-      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
-        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-bold text-[#5c5b56]">02.</span>
-            <span>Is my data kept private?</span>
-          </div>
-          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </summary>
-        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
-          Yes. Your text, voice recordings, and generated speech files are never stored, saved, or shared with anyone.
-        </p>
-      </details>
-
-      <!-- FAQ 3 -->
-      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
-        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-bold text-[#5c5b56]">03.</span>
-            <span>Can I download the audio file?</span>
-          </div>
-          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </summary>
-        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
-          Yes. As soon as your audio is generated, click the Download Audio button to save it instantly to your device.
-        </p>
-      </details>
-
-      <!-- FAQ 4 -->
-      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
-        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-bold text-[#5c5b56]">04.</span>
-            <span>How does voice cloning work?</span>
-          </div>
-          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </summary>
-        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
-          Record or upload a 5 to 15 second audio sample. Speak clearly into the microphone in a quiet room for the best results.
-        </p>
-      </details>
-
-      <!-- FAQ 5 -->
-      <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
-        <summary class="flex items-center justify-between font-bold text-sm text-[#141413] uppercase tracking-tight">
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-bold text-[#5c5b56]">05.</span>
-            <span>What are the rules for cloning a voice?</span>
-          </div>
-          <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </summary>
-        <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
-          You must have clear permission from the speaker to clone their voice. Impersonating individuals or generating deceptive audio is prohibited.
-        </p>
-      </details>
+      {faqs.map((faq, idx) => (
+        <details class="group bg-white border-2 border-[#141413] p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer rebus-stamp-shadow-sm">
+          <summary class="flex items-center justify-between font-bold text-sm text-[#141413] tracking-tight">
+            <div class="flex items-center space-x-3">
+              <span class="text-xs font-mono font-bold text-[#5c5b56]">
+                {String(idx + 1).padStart(2, "0")}.
+              </span>
+              <span>{faq.q}</span>
+            </div>
+            <span class="ml-4 flex-shrink-0 text-[#141413] group-open:rotate-180 transition-transform">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </span>
+          </summary>
+          <p class="text-xs text-[#5c5b56] mt-3 pt-3 border-t border-[#e5e0d4] leading-relaxed font-medium">
+            {faq.a}
+          </p>
+        </details>
+      ))}
     </div>
   </div>
+
+  <!-- FAQ Structured Data for Google Rich Snippets -->
+  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)} />
 </section>

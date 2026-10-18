@@ -5,12 +5,54 @@ import BetaSuggestionModal from "../components/BetaSuggestionModal.astro";
 interface Props {
   title?: string;
   description?: string;
+  keywords?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
 }
 
 const {
-  title = "Voco Speech — Free AI Speech & Voice Studio",
-  description = "Turn text into speech or create any voice from a short audio clip. Free, instant, and simple."
+  title = "Free TTS & Free Voice Cloning — Unlimited AI Voice Generator | Voco Speech",
+  description = "Convert text to speech online free or clone any voice from audio with zero signup. Browser-based, private AI voice generator with natural sounding voices & unlimited TTS.",
+  keywords = "Free TTS, Free Voice Cloning, text to speech, voice cloning, free text to speech, AI text to speech, AI TTS, AI voice cloning, free AI TTS, free AI voice cloning, free AI text to speech, free AI voice generator, free voice generator, AI voice cloner, free voice cloner, free unlimited TTS, unlimited text to speech, unlimited voice cloning, free text to speech no signup, free voice cloning no signup, free AI voice cloning unlimited, free AI text to speech unlimited, text to speech online free, voice cloning online free, browser based text to speech, browser based voice cloning, private AI voice cloning, local text to speech, AI voiceover generator, free AI voiceover, natural sounding text to speech, text to speech with cloned voice, clone my voice, clone voice from audio, how to clone my voice for free, how to convert text to speech for free, how to generate AI voiceovers",
+  canonicalUrl = "https://vocospeech.xyz/",
+  ogImage = "https://vocospeech.xyz/og-image.svg"
 } = Astro.props;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://vocospeech.xyz/#webapp",
+      "name": "Voco Speech",
+      "url": "https://vocospeech.xyz/",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "All modern browsers (WebAssembly, WebGPU)",
+      "description": "Free TTS and Free Voice Cloning web application running locally in the browser. Zero cloud uploads, 100% private AI voice generation, no signup required.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Free TTS (Text to Speech)",
+        "Free Voice Cloning from audio",
+        "Browser-based local AI processing",
+        "Private AI voice cloning with zero cloud uploads",
+        "Unlimited text to speech generations",
+        "No signup or account registration required",
+        "Instant audio preview and WAV download"
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://vocospeech.xyz/#organization",
+      "name": "Voco Speech",
+      "url": "https://vocospeech.xyz/",
+      "logo": "https://vocospeech.xyz/favicon.svg"
+    }
+  ]
+};
 ---
 
 <!doctype html>
@@ -22,20 +64,35 @@ const {
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     
-    <!-- Primary Meta Tags -->
+    <!-- Primary SEO Meta Tags -->
     <title>{title}</title>
     <meta name="title" content={title} />
     <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <meta name="author" content="Voco Speech" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Voco Speech" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="Voco Speech — Free TTS & Free Voice Cloning" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="Voco Speech — Free TTS & Free Voice Cloning" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     <!-- Fonts: Plus Jakarta Sans, Space Grotesk (for brand logo), & Instrument Serif -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
