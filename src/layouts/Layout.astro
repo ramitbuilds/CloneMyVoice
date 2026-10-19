@@ -10,11 +10,16 @@ interface Props {
   ogImage?: string;
 }
 
+const pageAliases: Record<string, string> = {
+  '/about-us': '/about', '/contact-us': '/contact', '/privacy-policy': '/privacy', '/terms-and-conditions': '/terms',
+};
+const pagePath = Astro.url.pathname.replace(/\/$/, '') || '/';
+
 const {
   title = "Free TTS & Free Voice Cloning — Unlimited AI Voice Generator | Voco Speech",
   description = "Convert text to speech online free or clone any voice from audio with zero signup. Browser-based, private AI voice generator with natural sounding voices & unlimited TTS.",
   keywords = "Free TTS, Free Voice Cloning, text to speech, voice cloning, free text to speech, AI text to speech, AI TTS, AI voice cloning, free AI TTS, free AI voice cloning, free AI text to speech, free AI voice generator, free voice generator, AI voice cloner, free voice cloner, free unlimited TTS, unlimited text to speech, unlimited voice cloning, free text to speech no signup, free voice cloning no signup, free AI voice cloning unlimited, free AI text to speech unlimited, text to speech online free, voice cloning online free, browser based text to speech, browser based voice cloning, private AI voice cloning, local text to speech, AI voiceover generator, free AI voiceover, natural sounding text to speech, text to speech with cloned voice, clone my voice, clone voice from audio, how to clone my voice for free, how to convert text to speech for free, how to generate AI voiceovers",
-  canonicalUrl = "https://www.vocospeech.xyz/",
+  canonicalUrl = new URL(pageAliases[pagePath] || pagePath, "https://www.vocospeech.xyz").href,
   ogImage = "https://www.vocospeech.xyz/og-image.svg"
 } = Astro.props;
 
@@ -59,14 +64,8 @@ const structuredData = {
 <html lang="en">
   <head>
     <!-- Google tag (gtag.js) -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-FJ0X98RSJ8"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-FJ0X98RSJ8');
-    </script>
+    {import.meta.env.PROD && <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-FJ0X98RSJ8"></script>}
+    <script is:inline type="module" src="/analytics.js"></script>
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

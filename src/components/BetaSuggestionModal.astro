@@ -276,6 +276,7 @@
   window.openSuggestionModal = function(options = {}) {
     if (modalOpen) return;
     modalOpen = true;
+    window.vocoTrack?.('feedback_opened', { source: options.trigger === 'idle_usage' ? 'idle_usage' : 'manual' });
     sessionStorage.setItem("voco_suggestion_shown", "true");
 
     // Reset view
@@ -320,6 +321,7 @@
   };
 
   function closeSuggestionModal() {
+    if (modalOpen) window.vocoTrack?.('feedback_closed');
     modalOpen = false;
     if (backdrop && modalBox) {
       backdrop.classList.add("opacity-0", "pointer-events-none");
@@ -435,6 +437,7 @@
       const textVal = textInput?.value?.trim() || "";
 
       if (!textVal) {
+        window.vocoTrack?.('feedback_validation_error', { field: 'suggestion' });
         if (textInput) {
           textInput.focus();
           textInput.classList.remove("border-[#141413]");
@@ -456,6 +459,7 @@
 
       // When "Credit My Name" is selected, require the author's name/handle
       if (isCredited && !authorName) {
+        window.vocoTrack?.('feedback_validation_error', { field: 'attribution' });
         if (authorNameInput) {
           authorNameInput.focus();
           authorNameInput.classList.remove("border-[#141413]");
@@ -480,6 +484,8 @@
         createdAt: new Date().toISOString(),
         url: window.location.href,
       };
+      const analyticsTopics = { 'Voice Quality': 'voice_quality', 'New Voices': 'voices_accents', 'Voice Cloning': 'voice_cloning', 'New Feature': 'new_feature', 'Speed / Performance': 'speed_performance' };
+      window.vocoTrack?.('feedback_submitted', { topic: analyticsTopics[selectedTopic] || 'none', attribution: isCredited ? 'credited' : 'anonymous' });
 
       // 1. INSTANT SUCCESS: Transition UI immediately without waiting for network!
       form.classList.add("hidden");
@@ -524,6 +530,7 @@
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formPayload.toString(),
         }).catch((postErr) => {
+          window.vocoTrack?.('feedback_delivery_failed');
           console.warn("Background Google Form delivery note:", postErr);
         });
       }

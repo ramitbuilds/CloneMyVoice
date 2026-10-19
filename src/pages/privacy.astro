@@ -10,7 +10,7 @@ import Footer from "../components/Footer.astro";
 >
   <Navbar />
   
-  <main id="main-content" class="min-h-[75vh] bg-[#fbf9f5] py-8 sm:py-12 md:py-20 border-b border-[#e5e0d4]">
+  <main data-analytics-section="page" id="main-content" class="min-h-[75vh] bg-[#fbf9f5] py-8 sm:py-12 md:py-20 border-b border-[#e5e0d4]">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Breadcrumb -->
@@ -29,7 +29,7 @@ import Footer from "../components/Footer.astro";
           Privacy Policy
         </h1>
         <p class="text-sm sm:text-base text-[#5c5b56] mt-2 leading-relaxed">
-          Last updated: October 2026 • Everything runs on your device.
+          Last updated: October 2026 • Speech processing stays on your device.
         </p>
       </div>
 
@@ -42,16 +42,19 @@ import Footer from "../components/Footer.astro";
               1. 100% On-Device Processing
             </h2>
             <p>
-              All speech generation and voice cloning run locally inside your browser threads. Your microphone audio, text inputs, and generated speech files are never transmitted to our servers or stored in the cloud.
+              All speech generation and voice cloning run locally inside your browser threads. Your microphone audio, text entered for speech generation, and generated speech files are never transmitted to our servers or stored in the cloud.
             </p>
           </div>
 
           <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
             <h2 class="text-xs font-bold uppercase tracking-wider text-[#141413] mb-1">
-              2. No Personal Data Collected
+              2. Usage Analytics
             </h2>
             <p>
-              We do not ask for accounts, passwords, email addresses, or payment details. There are no tracking cookies or advertising pixels.
+              We use Google Analytics to understand page visits, button use, sections viewed, and whether loading, recording, and speech generation succeed. Google Analytics may use cookies and collect browser, device, and usage information. You do not need an account to use Voco Speech.
+            </p>
+            <p class="mt-2">
+              Our analytics events exclude your speech text, custom voice names, recordings, generated audio, feedback messages, and contact details. We remove query strings and fragments from the page addresses sent by our analytics code. Analytics is disabled on local development pages and when supported browser privacy signals request an opt-out.
             </p>
           </div>
 
@@ -71,6 +74,10 @@ import Footer from "../components/Footer.astro";
             <p>
               Custom voice profiles are saved exclusively on your computer in your browser's private database (IndexedDB). You can delete them anytime from the Workspace.
             </p>
+          </div>
+          <div class="p-4 bg-[#fbf9f5] border border-[#141413]">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#141413] mb-1">5. Feedback You Choose to Submit</h2>
+            <p>If you submit a suggestion, its message, topic, and optional attribution are sent to our Google Forms feedback form. A backup may also be saved in your browser. Feedback content and attribution are not included in analytics events.</p>
           </div>
         </div>
 

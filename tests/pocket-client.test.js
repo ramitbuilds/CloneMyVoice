@@ -2,6 +2,43 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PocketTTSClient, VoiceStorage } from '../public/pocket-client.js';
 
+test('saved voice names reach only textContent, never the HTML template', async () => {
+    const originalDocument = globalThis.document;
+    const getAllVoices = VoiceStorage.getAllVoices;
+    const voices = [
+        { id: 'voice_1', name: '<b>Alex</b>' },
+        { id: 'voice_2', name: '<img src=x onerror="alert(1)">' },
+        { id: 'voice_" data-injected="yes', name: 'Alex & Jamie "take 2"' },
+    ].map(voice => ({ ...voice, createdAt: Date.now() }));
+    const cards = [];
+    globalThis.document = {
+        createElement() {
+            const name = { textContent: '' };
+            return {
+                set innerHTML(html) {
+                    for (const voice of voices) {
+                        assert.equal(html.includes(voice.name), false);
+                    }
+                    assert.equal(html.includes('data-voice-id'), false);
+                },
+                querySelector(selector) {
+                    return selector === '.saved-voice-name' ? name : { addEventListener() {} };
+                },
+            };
+        },
+    };
+    VoiceStorage.getAllVoices = async () => voices;
+    const client = Object.create(PocketTTSClient.prototype);
+    client.el = { savedVoicesContainer: { appendChild: card => cards.push(card) } };
+    try {
+        await client.refreshSavedVoicesList();
+        assert.deepEqual(cards.map(card => card.querySelector('.saved-voice-name').textContent), voices.map(v => v.name));
+    } finally {
+        globalThis.document = originalDocument;
+        VoiceStorage.getAllVoices = getAllVoices;
+    }
+});
+
 test('generation is blocked until loading finishes, then sends the saved clone', async () => {
     const messages = [];
     const client = Object.create(PocketTTSClient.prototype);
@@ -44,6 +81,32 @@ test('a prepared clone starts generation without rereading the saved recording',
         await client.startActualGeneration('Hello.', 'voice_saved', 0.7);
         assert.equal(messages[0].data.voice, 'voice_saved');
         assert.equal(messages[0].data.customVoice, null);
+    } finally {
+        VoiceStorage.getVoice = getVoice;
+    }
+});
+
+test('a saved-voice read failure restores Generate and allows a retry', async () => {
+    const getVoice = VoiceStorage.getVoice;
+    const messages = [];
+    const statuses = [];
+    const client = Object.create(PocketTTSClient.prototype);
+    Object.assign(client, {
+        el: { textInput: { value: 'Hello.' }, voiceSelect: { value: 'voice_saved' }, generateBtn: {} },
+        isWorkerReady: true, isGenerating: false,
+        worker: { postMessage: message => messages.push(message) },
+        updateStatus(status) { statuses.push(status); },
+    });
+    VoiceStorage.getVoice = async () => { throw new Error('Storage read failed'); };
+    try {
+        await client.handleGenerate();
+        assert.equal(client.el.generateBtn.disabled, false);
+        assert.equal(client.isGenerating, false);
+        assert.equal(messages.length, 0);
+        assert.match(statuses.at(-1), /saved voice.*try again/i);
+        VoiceStorage.getVoice = async () => ({ id: 'voice_saved', audioData: [0.1] });
+        await client.handleGenerate();
+        assert.equal(messages[0].type, 'generate');
     } finally {
         VoiceStorage.getVoice = getVoice;
     }

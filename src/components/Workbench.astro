@@ -2,7 +2,7 @@
 // Main interactive Workbench: Text-to-Speech and AI Voice Studio in Rebus design aesthetic (no emojis, no pills)
 ---
 
-<section id="workbench" class="scroll-mt-16 sm:scroll-mt-20 py-8 sm:py-12 md:py-16 bg-[#fbf9f5]">
+<section data-analytics-section="workbench" id="workbench" class="scroll-mt-16 sm:scroll-mt-20 py-8 sm:py-12 md:py-16 bg-[#fbf9f5]">
   <div class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
     
     <!-- Workbench Studio Container Card -->
@@ -290,25 +290,6 @@
             </div>
           </div>
 
-          <!-- Ethical Permission Confirmation -->
-          <div class="p-3.5 bg-white border border-[#e5e0d4]">
-            <div class="flex items-start space-x-3">
-              <input
-                id="clone-consent-checkbox"
-                type="checkbox"
-                checked
-                class="mt-0.5 w-4 h-4 text-[#141413] rounded-none border-[#141413] focus:ring-[#141413] cursor-pointer"
-              />
-              <label for="clone-consent-checkbox" class="text-xs text-[#5c5b56] leading-relaxed cursor-pointer select-none">
-                <strong class="text-[#141413] font-bold">Permission:</strong>
-                I confirm that I have permission from the speaker to use this voice, and will not use it to mislead anyone.
-              </label>
-            </div>
-            <p id="clone-consent-warning" class="hidden text-xs text-red-600 font-bold mt-2 pl-7">
-              You must check this box to confirm permission before saving.
-            </p>
-          </div>
-
           <!-- Save Button -->
           <div class="pt-2 space-y-2">
             <div class="flex items-center space-x-3">
@@ -410,28 +391,28 @@
             <span class="text-xs font-bold text-[#5c5b56] uppercase tracking-wider mr-1">Sample:</span>
             <button
               type="button"
-              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-analytics-preset="welcome" class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
               data-text="Welcome! Type or paste any text here to turn it into clear, natural speech."
             >
               Welcome
             </button>
             <button
               type="button"
-              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-analytics-preset="support" class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
               data-text="Thank you for reaching out today. I am happy to help you with your question."
             >
               Support
             </button>
             <button
               type="button"
-              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-analytics-preset="story" class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
               data-text="The sun was setting behind the hills, casting a warm golden glow across the quiet valley."
             >
               Story
             </button>
             <button
               type="button"
-              class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
+              data-analytics-preset="tutorial" class="sample-preset-btn px-2.5 py-1 border border-[#e5e0d4] text-xs font-medium bg-white text-[#5c5b56] hover:text-[#141413] hover:border-[#141413] transition-colors cursor-pointer"
               data-text="In this quick tutorial, you will learn how to create high quality audio in seconds."
             >
               Tutorial

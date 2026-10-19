@@ -42,7 +42,6 @@ let currentConditioningDim = 1024;
 let currentMaxTokenPerChunk = 50;
 
 let predefinedVoiceRecords = {};
-let customVoiceEmbedding = null;
 const customVoicesEmbeddings = new Map();
 let currentVoiceName = null;
 let voiceConditioningCache = new Map();
@@ -92,6 +91,7 @@ async function fetchWithCache(url, progressLabel = "") {
         state: "loading",
     });
 
+    self.postMessage({ type: 'download_progress', file: progressLabel, percent: 0, fromCache: false });
     const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
     if (!response.ok) {
         throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
@@ -341,6 +341,15 @@ function prepareVoiceEmbeddingData(voiceEmb) {
     return createTensor("float32", data, dims);
 }
 
+function cacheVoiceConditioning(voiceId, state) {
+    // Each prepared state is roughly 50 MB; keep memory bounded when switching voices.
+    voiceConditioningCache.delete(voiceId);
+    voiceConditioningCache.set(voiceId, state);
+    while (voiceConditioningCache.size > 2) {
+        voiceConditioningCache.delete(voiceConditioningCache.keys().next().value);
+    }
+}
+
 async function buildVoiceConditionedState(voiceEmb) {
     const flowLmState = initStateFromManifest(bundleMetadata.flow_lm_state_manifest);
     const emptySeq = createTensor("float32", new Float32Array(0), [1, 0, currentLatentDim]);
@@ -368,7 +377,7 @@ async function ensurePredefinedVoiceCached(voiceName, options = {}) {
 
     postMessage({ type: "status", status: statusText, state: "loading" });
     const conditioned = stateFromVoiceRecord(predefinedVoiceRecords[voiceName]);
-    voiceConditioningCache.set(voiceName, conditioned);
+    cacheVoiceConditioning(voiceName, conditioned);
     return conditioned;
 }
 
@@ -377,7 +386,7 @@ async function ensureCustomVoiceCached(options = {}) {
     if (embedding) {
         customVoicesEmbeddings.set(voiceId, embedding);
     }
-    const voiceEmb = customVoicesEmbeddings.get(voiceId) || customVoiceEmbedding;
+    const voiceEmb = customVoicesEmbeddings.get(voiceId);
     if (!voiceEmb) {
         throw new Error(`No custom voice loaded for voice ID: ${voiceId}.`);
     }
@@ -388,7 +397,7 @@ async function ensureCustomVoiceCached(options = {}) {
 
     postMessage({ type: "status", status: statusText, state: "loading" });
     const conditioned = await buildVoiceConditionedState(voiceEmb);
-    voiceConditioningCache.set(voiceId, conditioned);
+    cacheVoiceConditioning(voiceId, conditioned);
     return conditioned;
 }
 
@@ -788,10 +797,6 @@ async function loadBundle(language, { initialLoad = false } = {}) {
         });
     }
 
-    if (customVoiceEmbedding) {
-        voiceConditioningCache.delete("custom");
-    }
-
     isReady = true;
 
     postMessage({
@@ -909,6 +914,13 @@ async function handleMessage(e, version = stopVersion) {
             return;
         }
 
+        if (type === "forget_voice") {
+            customVoicesEmbeddings.delete(data.voiceId);
+            voiceConditioningCache.delete(data.voiceId);
+            if (currentVoiceName === data.voiceId) currentVoiceName = null;
+            return;
+        }
+
         if (!isReady) {
             postMessage({ type: "error", error: "Voice engine is preparing. Please try again in a moment." });
             return;
@@ -923,7 +935,6 @@ async function handleMessage(e, version = stopVersion) {
             const embedding = await encodeVoiceAudio(data.audio);
             const voiceId = data.voiceId || "custom";
             customVoicesEmbeddings.set(voiceId, embedding);
-            customVoiceEmbedding = embedding;
             currentVoiceName = voiceId;
             await ensureCustomVoiceCached({
                 voiceId,

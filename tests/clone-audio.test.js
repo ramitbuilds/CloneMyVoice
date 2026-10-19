@@ -6,11 +6,13 @@ test('cloning preserves quiet captured speech and silence without additional fil
     const originalWindow = globalThis.window;
     const originalOfflineContext = globalThis.OfflineAudioContext;
     const getAllVoices = VoiceStorage.getAllVoices;
+    let contextsClosed = 0;
     const samples = new Float32Array(24000 * 3);
     for (let i = 12000; i < 18000; i++) samples[i] = 0.0002 * Math.sin(i / 10);
     for (let i = 24000; i < 48000; i++) samples[i] = 0.1 * Math.sin(i / 10) + 0.002;
     globalThis.window = { AudioContext: class {
         async decodeAudioData() { return { duration: 3 }; }
+        async close() { contextsClosed++; }
     } };
     globalThis.OfflineAudioContext = class {
         constructor(channels, length, rate) {
@@ -25,6 +27,7 @@ test('cloning preserves quiet captured speech and silence without additional fil
     try {
         await client.handleRecordingFinished(new Blob(['recording']));
         assert.equal(client.pendingClonedAudio, samples);
+        assert.equal(contextsClosed, 1);
         const wav = new DataView(await client.pendingPreviewBlob.arrayBuffer());
         assert.equal(wav.getUint32(40, true), samples.length * 2);
         assert.equal(wav.getInt16(44, true), 0);
@@ -35,6 +38,29 @@ test('cloning preserves quiet captured speech and silence without additional fil
         globalThis.window = originalWindow;
         globalThis.OfflineAudioContext = originalOfflineContext;
         VoiceStorage.getAllVoices = getAllVoices;
+    }
+});
+
+test('recorder setup failure closes an already granted microphone stream', async () => {
+    const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    const originalRecorder = globalThis.MediaRecorder;
+    const originalAlert = globalThis.alert;
+    let stopped = false;
+    const stream = { getTracks: () => [{ stop() { stopped = true; } }] };
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaDevices: { getUserMedia: async () => stream } } });
+    globalThis.MediaRecorder = class { constructor() { throw new Error('Unsupported recorder'); } };
+    globalThis.alert = () => {};
+    const client = Object.create(PocketTTSClient.prototype);
+    Object.assign(client, { isWorkerReady: true, el: {} });
+    try {
+        await client.startRecording();
+        assert.equal(stopped, true);
+        assert.equal(client.mediaStream, null);
+    } finally {
+        if (originalNavigator) Object.defineProperty(globalThis, 'navigator', originalNavigator);
+        else delete globalThis.navigator;
+        globalThis.MediaRecorder = originalRecorder;
+        globalThis.alert = originalAlert;
     }
 });
 

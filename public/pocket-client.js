@@ -1,3 +1,5 @@
+import { trackEvent, voiceAnalytics, textLengthRange, errorCategory } from './analytics.js';
+
 const SAMPLE_RATE = 24000;
 
 // WAV file encoder (16-bit PCM, mono)
@@ -87,8 +89,9 @@ export class VoiceStorage {
                     const list = req.result || [];
                     list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                     resolve(list);
+                    db.close();
                 };
-                req.onerror = () => reject(req.error);
+                req.onerror = () => { db.close(); reject(req.error); };
             });
         } catch (err) {
             console.warn("IndexedDB getAllVoices warning:", err);
@@ -103,8 +106,8 @@ export class VoiceStorage {
                 const transaction = db.transaction(VoiceStorage.STORE_NAME, "readonly");
                 const store = transaction.objectStore(VoiceStorage.STORE_NAME);
                 const req = store.get(id);
-                req.onsuccess = () => resolve(req.result || null);
-                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { db.close(); resolve(req.result || null); };
+                req.onerror = () => { db.close(); reject(req.error); };
             });
         } catch (err) {
             console.warn("IndexedDB getVoice warning:", err);
@@ -118,8 +121,8 @@ export class VoiceStorage {
             const transaction = db.transaction(VoiceStorage.STORE_NAME, "readwrite");
             const store = transaction.objectStore(VoiceStorage.STORE_NAME);
             const req = store.put(voiceRecord);
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
+            transaction.oncomplete = () => { db.close(); resolve(req.result); };
+            transaction.onabort = transaction.onerror = () => { db.close(); reject(transaction.error || req.error || new Error("Voice storage transaction failed")); };
         });
     }
 
@@ -129,8 +132,8 @@ export class VoiceStorage {
             const transaction = db.transaction(VoiceStorage.STORE_NAME, "readwrite");
             const store = transaction.objectStore(VoiceStorage.STORE_NAME);
             const req = store.delete(id);
-            req.onsuccess = () => resolve(true);
-            req.onerror = () => reject(req.error);
+            transaction.oncomplete = () => { db.close(); resolve(true); };
+            transaction.onabort = transaction.onerror = () => { db.close(); reject(transaction.error || req.error || new Error("Voice deletion transaction failed")); };
         });
     }
 }
@@ -243,8 +246,6 @@ export class PocketTTSClient {
             voicePreviewAudio: document.getElementById("voice-preview-audio"),
             reRecordBtn: document.getElementById("re-record-btn"),
             cloneVoiceName: document.getElementById("clone-voice-name"),
-            cloneConsentCheckbox: document.getElementById("clone-consent-checkbox"),
-            cloneConsentWarning: document.getElementById("clone-consent-warning"),
             saveCloneBtn: document.getElementById("save-clone-btn"),
             saveCloneBtnContent: document.getElementById("save-clone-btn-content"),
             saveCloneBtnText: document.getElementById("save-clone-btn-text"),
@@ -312,6 +313,9 @@ export class PocketTTSClient {
             this.el.languageSelect.addEventListener("change", (e) => {
                 const newLang = e.target.value;
                 if (newLang !== this.currentLanguage && this.worker) {
+                    this.engineLoadStart = performance.now();
+                    this.engineUsedNetwork = false;
+                    trackEvent('engine_load_started', { language: newLang, isolated: Boolean(globalThis.crossOriginIsolated) });
                     this.setEngineAvailability(false);
                     this.updateStatus("Changing language...", "loading");
                     this.worker.postMessage({
@@ -327,6 +331,7 @@ export class PocketTTSClient {
             this.el.voiceSelect.addEventListener("change", async (e) => {
                 const voiceId = e.target.value;
                 this.currentVoice = voiceId;
+                trackEvent('voice_selected', voiceAnalytics(voiceId));
 
                 const customVoice = await VoiceStorage.getVoice(voiceId);
                 if (customVoice && this.worker && this.isWorkerReady) {
@@ -405,15 +410,6 @@ export class PocketTTSClient {
             this.el.saveCloneBtn.addEventListener("click", () => this.handleSaveClonedVoice());
         }
 
-        // Consent checkbox
-        if (this.el.cloneConsentCheckbox) {
-            this.el.cloneConsentCheckbox.addEventListener("change", (e) => {
-                if (e.target.checked && this.el.cloneConsentWarning) {
-                    this.el.cloneConsentWarning.classList.add("hidden");
-                }
-            });
-        }
-
         // Use Voice CTA from success banner
         if (this.el.cloneSuccessCta) {
             this.el.cloneSuccessCta.addEventListener("click", () => {
@@ -457,10 +453,14 @@ export class PocketTTSClient {
         this.preparedVoices = new Set();
         this.setEngineAvailability(false);
         this.engineStatus = "Loading speech engine...";
+        this.engineLoadStart = performance.now();
+        this.engineUsedNetwork = false;
+        trackEvent('engine_load_started', { language: this.currentLanguage, isolated: Boolean(globalThis.crossOriginIsolated) });
         this.updateStatus(this.engineStatus, "loading");
 
         this.worker = new Worker("./inference-worker.js", { type: "module" });
         this.worker.onerror = (event) => {
+            trackEvent('engine_failed', { error_category: errorCategory(event.message), language: this.currentLanguage });
             this.engineError = true;
             this.isGenerating = false;
             this.setEngineAvailability(false);
@@ -497,6 +497,7 @@ export class PocketTTSClient {
                     this.preparedVoices.clear();
                     if (e.data.sampleRate) this.currentSampleRate = e.data.sampleRate;
                     this.setEngineAvailability(true);
+                    trackEvent('engine_ready', { language, elapsed_ms: performance.now() - this.engineLoadStart, cache_source: this.engineUsedNetwork ? 'network' : 'cache', isolated: Boolean(globalThis.crossOriginIsolated) });
                     break;
 
                 case "loaded":
@@ -504,6 +505,7 @@ export class PocketTTSClient {
                     break;
 
                 case "voice_encoded":
+                    trackEvent('clone_ready');
                     this.preparedVoices.add(voiceId);
                     await this.onVoiceEncoded({ voiceId, voiceName, embedding });
                     break;
@@ -513,6 +515,7 @@ export class PocketTTSClient {
                     break;
 
                 case "generation_started":
+                    trackEvent('generation_started', this.generationAnalytics);
                     this.generationStartTime = performance.now();
                     this.firstChunkReceived = false;
                     this.currentGenerationChunks = [];
@@ -529,6 +532,9 @@ export class PocketTTSClient {
 
                 case "error":
                     console.error("Worker Error:", error);
+                    trackEvent(!this.isWorkerReady ? 'engine_failed' : this.isGenerating ? 'generation_failed' : 'clone_failed', {
+                        ...this.generationAnalytics, language: this.currentLanguage, error_category: errorCategory(error), stage: 'encoding',
+                    });
                     if (!this.isWorkerReady) {
                         this.engineError = true;
                         this.setEngineAvailability(false);
@@ -551,6 +557,9 @@ export class PocketTTSClient {
                         this.el.saveCloneBtnText.textContent = "Save Voice";
                     }
                     break;
+                case "cache_cleared":
+                    trackEvent('cache_cleared');
+                    break;
             }
         };
 
@@ -558,6 +567,7 @@ export class PocketTTSClient {
     }
 
     handleDownloadProgress(file, percent, fromCache) {
+        if (!fromCache) this.engineUsedNetwork = true;
         if (fromCache || this.isWorkerReady) return;
         this.engineStatus = `Downloading speech engine (${percent}%)...`;
         this.updateStatus(this.engineStatus, "loading");
@@ -626,9 +636,13 @@ export class PocketTTSClient {
     }
 
     async handleGenerate() {
-        if (!this.isWorkerReady) return;
+        if (!this.isWorkerReady) {
+            trackEvent('generation_validation_error', { reason: 'engine_not_ready' });
+            return;
+        }
         const text = this.el.textInput?.value?.trim();
         if (!text) {
+            trackEvent('generation_validation_error', { reason: 'empty_text' });
             alert("Please type or paste some text first.");
             this.el.textInput?.focus();
             return;
@@ -646,8 +660,20 @@ export class PocketTTSClient {
 
     async startActualGeneration(text, targetVoice, temperature) {
         if (!this.isWorkerReady) return;
-        const voice = this.preparedVoices?.has(targetVoice) ? null : await VoiceStorage.getVoice(targetVoice);
+        let voice;
+        try {
+            voice = this.preparedVoices?.has(targetVoice) ? null : await VoiceStorage.getVoice(targetVoice);
+        } catch (error) {
+            trackEvent('generation_failed', { ...voiceAnalytics(targetVoice), language: this.currentLanguage, error_category: errorCategory(error), stage: 'storage' });
+            this.isGenerating = false;
+            this.setButtonState("ready", "Generate Speech");
+            this.updateStatus("Could not read the saved voice. Please try again.", "error");
+            return;
+        }
         this.isGenerating = true;
+        this.generationAnalytics = { ...voiceAnalytics(targetVoice), language: this.currentLanguage, character_range: textLengthRange(text.length), tone: temperature };
+        this.generationRequestedAt = performance.now();
+        trackEvent('generation_requested', this.generationAnalytics);
         this.currentGenerationChunks = [];
         this.setButtonState("generating", "Generating speech...");
         this.updateStatus("Creating audio...", "loading");
@@ -678,6 +704,7 @@ export class PocketTTSClient {
     }
 
     handleStop() {
+        if (this.isGenerating) trackEvent('generation_stopped', { ...this.generationAnalytics, elapsed_ms: performance.now() - this.generationRequestedAt });
         if (this.worker && (this.isGenerating || !this.isWorkerReady)) {
             this.worker.postMessage({ type: "stop" });
         }
@@ -694,6 +721,7 @@ export class PocketTTSClient {
         if (!this.firstChunkReceived) {
             this.firstChunkReceived = true;
             const timeTakenMs = Math.round(performance.now() - this.generationStartTime);
+            trackEvent('generation_first_audio', { latency_ms: performance.now() - this.generationRequestedAt });
             if (this.el.statTTFB) this.el.statTTFB.textContent = timeTakenMs;
             if (this.el.ttfbBar) {
                 const pct = Math.max(5, Math.min(100, 100 - (timeTakenMs / 10)));
@@ -721,6 +749,9 @@ export class PocketTTSClient {
             }
 
             const durationSec = (totalLength / this.currentSampleRate);
+            this.lastCompletedAnalytics = this.generationAnalytics;
+            this.lastCompletedDuration = durationSec;
+            trackEvent('generation_completed', { ...this.generationAnalytics, duration_s: durationSec, elapsed_ms: performance.now() - this.generationRequestedAt });
             if (this.el.statDuration) {
                 this.el.statDuration.textContent = `${durationSec.toFixed(1)}s`;
             }
@@ -752,8 +783,9 @@ export class PocketTTSClient {
 
     handleDownload() {
         if (!this.lastCompletedAudioBlob) return;
+        trackEvent('download_requested', { ...this.lastCompletedAnalytics, duration_s: this.lastCompletedDuration });
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(this.lastCompletedAudioBlob);
+        a.href = this.lastCompletedAudioUrl;
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
         a.download = `voco-voice-${this.currentVoice}-${timestamp}.wav`;
         document.body.appendChild(a);
@@ -912,6 +944,7 @@ export class PocketTTSClient {
 
     async startRecording() {
         if (!this.isWorkerReady) return;
+        trackEvent('clone_recording_requested');
         try {
             const audioConstraints = {
                 echoCancellation: false,
@@ -934,12 +967,14 @@ export class PocketTTSClient {
             this.mediaRecorder.onstop = async () => {
                 this.stopMicVisualizer();
                 stream.getTracks().forEach((track) => track.stop());
-                const blob = new Blob(this.recordedChunks, { type: "audio/webm" });
+                const mimeType = this.mediaRecorder.mimeType || this.recordedChunks[0]?.type || "audio/webm";
+                const blob = new Blob(this.recordedChunks, { type: mimeType });
                 await this.handleRecordingFinished(blob);
             };
 
             this.mediaRecorder.start();
             this.isRecording = true;
+            trackEvent('clone_recording_started');
             this.startMicVisualizer(stream);
 
             if (this.el.recordBtn) {
@@ -976,12 +1011,16 @@ export class PocketTTSClient {
             }, 1000);
         } catch (err) {
             console.error("Microphone access error:", err);
+            this.mediaStream?.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
+            trackEvent('clone_failed', { stage: 'recording', error_category: errorCategory(err) });
             alert("Could not access microphone: " + err.message + "\nPlease make sure microphone permissions are granted in your browser.");
         }
     }
 
     stopRecording() {
         if (this.mediaRecorder && this.isRecording) {
+            trackEvent('clone_recording_stopped', { duration_s: this.recordingSeconds });
             this.mediaRecorder.stop();
             this.isRecording = false;
             clearInterval(this.recordingTimer);
@@ -1007,7 +1046,12 @@ export class PocketTTSClient {
         try {
             const arrayBuffer = await blob.arrayBuffer();
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            let decodedBuffer;
+            try {
+                decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            } finally {
+                await audioCtx.close();
+            }
 
             // Resample to 24000Hz mono Float32Array
             const rawAudio = await resampleTo24kMono(decodedBuffer);
@@ -1024,6 +1068,7 @@ export class PocketTTSClient {
             }
 
             this.pendingClonedAudio = rawAudio;
+            trackEvent('clone_sample_ready', { duration_s: durationSec });
 
             // Preview the same captured sample used for cloning.
             const previewBlob = encodeWAV(rawAudio, SAMPLE_RATE);
@@ -1067,6 +1112,7 @@ export class PocketTTSClient {
             }
         } catch (err) {
             console.error("Audio processing error:", err);
+            trackEvent('clone_failed', { stage: 'processing', error_category: errorCategory(err) });
             alert("Could not process microphone recording: " + err.message);
         }
     }
@@ -1099,14 +1145,6 @@ export class PocketTTSClient {
             return;
         }
 
-        // Auto-check permission if not already checked
-        if (this.el.cloneConsentCheckbox && !this.el.cloneConsentCheckbox.checked) {
-            this.el.cloneConsentCheckbox.checked = true;
-        }
-        if (this.el.cloneConsentWarning) {
-            this.el.cloneConsentWarning.classList.add("hidden");
-        }
-
         const voiceName = this.el.cloneVoiceName?.value?.trim() || "My Voice";
         const voiceId = "voice_" + Date.now();
 
@@ -1124,14 +1162,13 @@ export class PocketTTSClient {
 
         const durationSec = this.pendingClonedAudio.length / SAMPLE_RATE;
 
-        // Create the complete voice record immediately!
-        // We store audioData as a standard Array so IndexedDB serializes it flawlessly across all browsers
+        // IndexedDB preserves typed arrays; older Array-based records remain readable.
         const saveRecord = {
             id: voiceId,
             name: voiceName,
             createdAt: Date.now(),
             duration: durationSec,
-            audioData: Array.from(this.pendingClonedAudio),
+            audioData: this.pendingClonedAudio,
             audioSampleBlob: this.pendingPreviewBlob || null,
             embedding: null,
         };
@@ -1139,6 +1176,7 @@ export class PocketTTSClient {
         try {
             // Save immediately into IndexedDB so the user's voice profile is never lost
             await VoiceStorage.saveVoice(saveRecord);
+            trackEvent('clone_saved', { duration_s: durationSec });
 
             // Display success alert
             if (this.el.cloneSuccessName) {
@@ -1158,8 +1196,10 @@ export class PocketTTSClient {
             this.updateStatus(`Voice "${saveRecord.name}" saved safely on this device`, "idle");
 
         } catch (storageErr) {
+            trackEvent('clone_failed', { stage: 'storage', error_category: errorCategory(storageErr) });
             console.error("IndexedDB save error:", storageErr);
             alert("Could not save voice to browser storage: " + storageErr.message);
+            return;
         } finally {
             if (this.el.saveCloneBtn) {
                 this.el.saveCloneBtn.disabled = !this.isWorkerReady;
@@ -1208,6 +1248,7 @@ export class PocketTTSClient {
         if (!voice) return;
 
         this.currentVoice = voice.id;
+        trackEvent('voice_selected', voiceAnalytics(voice.id));
 
         // 1. Switch to TTS tab
         this.switchTab("tts");
@@ -1250,6 +1291,8 @@ export class PocketTTSClient {
 
         const container = this.el.savedVoicesContainer;
         if (!container) return;
+        for (const url of this.libraryPreviewUrls || []) URL.revokeObjectURL(url);
+        this.libraryPreviewUrls = [];
 
         if (voices.length === 0) {
             container.innerHTML = `
@@ -1278,6 +1321,7 @@ export class PocketTTSClient {
             let sampleAudioUrl = null;
             if (v.audioSampleBlob) {
                 sampleAudioUrl = URL.createObjectURL(v.audioSampleBlob);
+                this.libraryPreviewUrls.push(sampleAudioUrl);
             }
 
             card.innerHTML = `
@@ -1291,7 +1335,7 @@ export class PocketTTSClient {
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-xs font-bold text-[#141413] uppercase tracking-wider">${v.name}</span>
+                            <span class="saved-voice-name text-xs font-bold text-[#141413] uppercase tracking-wider"></span>
                             <span class="text-[10px] bg-white border border-[#141413] px-1.5 py-0.2 font-bold text-[#141413] uppercase">Private</span>
                         </div>
                         <span class="text-[11px] text-[#5c5b56]">${durationStr} • Stored ${dateStr}</span>
@@ -1300,19 +1344,17 @@ export class PocketTTSClient {
 
                 <div class="flex flex-wrap items-center gap-2">
                     ${sampleAudioUrl ? `
-                        <audio src="${sampleAudioUrl}" controls class="h-8 w-44"></audio>
+                        <audio src="${sampleAudioUrl}" controls class="saved-voice-preview h-8 w-44"></audio>
                     ` : ""}
                     <button
                         type="button"
                         class="use-voice-btn px-3 py-1.5 bg-[#141413] text-white text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 transition-colors cursor-pointer border border-[#141413]"
-                        data-voice-id="${v.id}"
                     >
                         Use this Voice →
                     </button>
                     <button
                         type="button"
                         class="delete-voice-btn p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 border border-neutral-300 hover:border-red-300 transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
-                        data-voice-id="${v.id}"
                         title="Delete voice"
                         aria-label="Delete voice"
                     >
@@ -1323,6 +1365,8 @@ export class PocketTTSClient {
                 </div>
             `;
 
+            card.querySelector(".saved-voice-name").textContent = v.name;
+
             const useBtn = card.querySelector(".use-voice-btn");
             useBtn?.addEventListener("click", () => {
                 this.useSavedVoiceInTTS(v.id);
@@ -1332,6 +1376,9 @@ export class PocketTTSClient {
             delBtn?.addEventListener("click", async () => {
                 if (confirm(`Are you sure you want to delete the saved voice "${v.name}"?`)) {
                     await VoiceStorage.deleteVoice(v.id);
+                    this.preparedVoices.delete(v.id);
+                    this.worker?.postMessage({ type: 'forget_voice', data: { voiceId: v.id } });
+                    trackEvent('voice_deleted');
                     if (this.currentVoice === v.id) {
                         this.currentVoice = "alba";
                     }

@@ -84,3 +84,27 @@ test('a failed clone load does not block subsequent built-in generation', async 
     assert.equal(messages.filter(m => m.type === 'error').length, 1);
     assert.equal(messages.filter(m => m.type === 'audio_chunk').length, 1);
 });
+
+test('switching voices bounds prepared-state memory and evicted voices can be rebuilt', async () => {
+    const { context, send, messages } = worker();
+    vm.runInContext(`
+        predefinedVoiceRecords = { alba: {}, marius: {}, cosette: {} };
+        stateFromVoiceRecord = () => ({ prepared: true });
+    `, context);
+    for (const voiceName of ['alba', 'marius', 'cosette']) await send('set_voice', { voiceName });
+    assert.equal(vm.runInContext('voiceConditioningCache.size', context), 2);
+    assert.equal(vm.runInContext('voiceConditioningCache.has("alba")', context), false);
+    await send('generate', { voice: 'alba', text: 'Hello.' });
+    assert.equal(messages.filter(m => m.type === 'error').length, 0);
+    assert.equal(messages.filter(m => m.type === 'audio_chunk').length, 1);
+});
+
+test('a missing or deleted clone cannot fall back to another person’s voice', async () => {
+    const { context, send, messages } = worker();
+    await send('encode_voice', { voiceId: 'voice_first', audio: new Float32Array(24000) });
+    await send('generate', { voice: 'voice_missing', text: 'Hello.' });
+    assert.equal(messages.filter(m => m.type === 'error').length, 1);
+    await send('forget_voice', { voiceId: 'voice_first' });
+    assert.equal(vm.runInContext('customVoicesEmbeddings.has("voice_first")', context), false);
+    assert.equal(vm.runInContext('voiceConditioningCache.has("voice_first")', context), false);
+});
