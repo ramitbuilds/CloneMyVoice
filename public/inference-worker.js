@@ -135,6 +135,10 @@ async function fetchWithCache(url, progressLabel = "") {
         });
     }
 
+    if (receivedBytes !== contentLength && !response.headers.get("content-encoding")) {
+        throw new Error(`Incomplete download of ${fileName}. Please retry the download.`);
+    }
+
     const fullBuffer = new Uint8Array(receivedBytes);
     let offset = 0;
     for (const chunk of chunks) {
@@ -429,6 +433,31 @@ function parseNpyFloat32(buffer) {
     return { data: new Float32Array(data), shape };
 }
 
+async function loadPredefinedVoices(language) {
+    const url = bundleUrl(language, "voices.bin");
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            const records = parseVoiceStatesBin(await fetchWithCache(url, "voices.bin"));
+            const expected = bundleMetadata.predefined_voices || [];
+            if (!Object.keys(records).length || expected.some(name => !records[name])) {
+                throw new Error("The built-in voice file is missing required voices.");
+            }
+            return records;
+        } catch (error) {
+            // Remove only this failed asset so Retry cannot reuse a damaged voice file.
+            try {
+                if ("caches" in self) await (await caches.open(CACHE_NAME)).delete(url);
+            } catch (cacheError) {
+                console.warn("Could not clear the built-in voice cache:", cacheError);
+            }
+            if (attempt === 1) {
+                throw new Error(`Could not load the built-in voices. Check your connection and select Retry download. (${error.message || error})`);
+            }
+            postMessage({ type: "status", status: "Retrying built-in voice download...", state: "loading" });
+        }
+    }
+}
+
 function parseVoiceStatesBin(buffer) {
     const view = new DataView(buffer);
     let offset = 0;
@@ -471,6 +500,11 @@ function parseVoiceStatesBin(buffer) {
 
             const byteLength = view.getUint32(offset, true);
             offset += 4;
+
+            const elementBytes = dtypeCode === 0 ? 4 : dtypeCode === 1 ? 8 : dtypeCode === 2 ? 1 : 0;
+            if (!elementBytes || byteLength !== shape.reduce((size, dim) => size * dim, 1) * elementBytes || offset + byteLength > buffer.byteLength) {
+                throw new Error("Invalid or incomplete built-in voice tensor.");
+            }
 
             let data;
             if (dtypeCode === 0) {
@@ -776,12 +810,7 @@ async function loadBundle(language, { initialLoad = false } = {}) {
 
     // 5. Predefined voices
     predefinedVoiceRecords = {};
-    try {
-        const voicesBuffer = await fetchWithCache(bundleUrl(language, "voices.bin"), "voices.bin");
-        predefinedVoiceRecords = parseVoiceStatesBin(voicesBuffer);
-    } catch (e) {
-        console.warn("Could not load voices.bin:", e);
-    }
+    predefinedVoiceRecords = await loadPredefinedVoices(language);
 
     voiceConditioningCache = new Map();
     let defaultVoice = bundleMetadata.predefined_voices?.includes("alba") ? "alba" : null;
