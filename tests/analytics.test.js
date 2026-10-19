@@ -18,6 +18,15 @@ function browser() {
     return { calls, handlers, restore() { Object.assign(globalThis, previous); } };
 }
 
+test('bug-report analytics retains its category without report content', () => {
+    const page = browser();
+    try {
+        trackEvent('feedback_submitted', { topic: 'bug_report', attribution: 'anonymous', text: 'Private bug details' });
+        assert.equal(page.calls[0][2].topic, 'bug_report');
+        assert.equal(JSON.stringify(page.calls).includes('Private bug details'), false);
+    } finally { page.restore(); }
+});
+
 test('analytics excludes private content, arbitrary parameters, custom names, and URL details', () => {
     const page = browser();
     try {

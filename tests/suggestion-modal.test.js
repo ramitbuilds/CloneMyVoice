@@ -42,6 +42,41 @@ function feedbackPage() {
     return { tick, events, document, window, storage, opened, audio };
 }
 
+test('bug reports retain their category in delivery and content-free analytics', () => {
+    const storage = new Map();
+    const submissions = [];
+    const analytics = [];
+    const element = () => ({
+        handlers: {}, classList: { add() {}, remove() {} },
+        addEventListener(name, handler) { this.handlers[name] = handler; },
+        closest() { return null; }, reset() {},
+    });
+    const form = element();
+    const bug = { ...element(), getAttribute: () => 'Bug Report' };
+    const input = { ...element(), value: 'Generate stopped with an error on my phone.' };
+    const elements = { 'suggestion-form': form, 'suggestion-text': input };
+    vm.runInNewContext(script, {
+        document: {
+            getElementById: id => elements[id] || null,
+            querySelectorAll: selector => selector === '.topic-pill' ? [bug] : [],
+            addEventListener() {},
+        },
+        window: { location: { href: 'https://www.vocospeech.xyz/' }, vocoTrack: (...args) => analytics.push(args), addEventListener() {} },
+        sessionStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) },
+        localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) },
+        URLSearchParams, setTimeout() {},
+        fetch: async (url, options) => { submissions.push(options.body); },
+    });
+    bug.handlers.click();
+    form.handlers.submit({ preventDefault() {} });
+    const payload = new URLSearchParams(submissions[0]);
+    assert.equal(payload.get('entry.1046555020'), 'Bug Report');
+    assert.equal(payload.get('entry.280084409'), input.value);
+    assert.equal(analytics[0][0], 'feedback_submitted');
+    assert.equal(analytics[0][1].topic, 'bug_report');
+    assert.equal(JSON.stringify(analytics).includes(input.value), false);
+});
+
 test('automatic feedback waits two minutes and only appears once per session', () => {
     const page = feedbackPage();
     page.tick(119_999);

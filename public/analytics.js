@@ -9,7 +9,7 @@ const LINK_TARGETS = {
     '/about': 'about', '/contact': 'contact', '/privacy': 'privacy', '/terms': 'terms', 'mailto:hi@vocospeech.xyz': 'email',
     'mailto:hi@vocospeech.xyz?subject=500%20Error%20Report': 'error_report_email',
 };
-const TOPICS = { 'Voice Quality': 'voice_quality', 'New Voices': 'voices_accents', 'Voice Cloning': 'voice_cloning', 'New Feature': 'new_feature', 'Speed / Performance': 'speed_performance' };
+const TOPICS = { 'Bug Report': 'bug_report', 'Voice Quality': 'voice_quality', 'New Voices': 'voices_accents', 'Voice Cloning': 'voice_cloning', 'New Feature': 'new_feature', 'Speed / Performance': 'speed_performance' };
 const CONTROLS = new Set([
     ...IDS.map(id => id.replaceAll('-', '_')), ...Object.values(LINK_TARGETS).map(id => `link_${id}`),
     'saved_voice_use', 'saved_voice_delete', 'sample_welcome', 'sample_support', 'sample_story', 'sample_tutorial',
@@ -118,7 +118,7 @@ export function trackEvent(name, parameters = {}) {
 }
 
 function sectionOf(element) {
-    if (element.closest('#suggestion-modal-backdrop, aside[aria-label="Suggest a feature"]')) return 'feedback';
+    if (element.closest('#suggestion-modal-backdrop, aside[aria-label="Share feedback"]')) return 'feedback';
     if (element.closest('header')) return 'navigation';
     if (element.closest('footer')) return 'footer';
     for (const section of ['workbench', 'features', 'guide', 'faq']) if (element.closest(`#${section}`)) return section;
