@@ -2,6 +2,51 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PocketTTSClient, VoiceStorage } from '../public/pocket-client.js';
 
+test('completed speech autoplays once, after all chunks have been assembled', async () => {
+    const events = [];
+    const client = Object.create(PocketTTSClient.prototype);
+    Object.assign(client, {
+        el: {
+            audioPlayback: { src: '', load() { events.push('load'); }, async play() { events.push('play'); } },
+            downloadBtn: { disabled: true },
+        },
+        currentGenerationChunks: [], currentSampleRate: 24000,
+        generationStartTime: performance.now(), generationRequestedAt: performance.now(),
+        setButtonState() {}, updateStatus() {},
+    });
+    client.handleAudioChunk(new Float32Array([0.1, 0.2]));
+    client.handleAudioChunk(new Float32Array([0.3]));
+    assert.deepEqual(events, []);
+    try {
+        await client.handleStreamEnd();
+        assert.deepEqual(events, ['load', 'play']);
+        assert.equal(client.lastCompletedAudioBlob.size, 44 + 3 * 2);
+        assert.equal(client.el.downloadBtn.disabled, false);
+    } finally { URL.revokeObjectURL(client.lastCompletedAudioUrl); }
+});
+
+test('blocked autoplay preserves the download and offers manual playback', async () => {
+    const statuses = [];
+    let attempts = 0;
+    const client = Object.create(PocketTTSClient.prototype);
+    Object.assign(client, {
+        el: {
+            audioPlayback: { src: '', load() {}, async play() { attempts++; throw new Error('Autoplay blocked'); } },
+            downloadBtn: { disabled: true },
+        },
+        currentGenerationChunks: [new Float32Array([0.1])], currentSampleRate: 24000,
+        generationRequestedAt: performance.now(),
+        setButtonState() {}, updateStatus(message) { statuses.push(message); },
+    });
+    try {
+        await client.handleStreamEnd();
+        assert.equal(attempts, 1);
+        assert.equal(client.el.downloadBtn.disabled, false);
+        assert.equal(client.isGenerating, false);
+        assert.match(statuses.at(-1), /press play/i);
+    } finally { URL.revokeObjectURL(client.lastCompletedAudioUrl); }
+});
+
 test('saved voice names reach only textContent, never the HTML template', async () => {
     const originalDocument = globalThis.document;
     const getAllVoices = VoiceStorage.getAllVoices;

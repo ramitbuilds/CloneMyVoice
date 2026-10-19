@@ -651,6 +651,12 @@ export class PocketTTSClient {
         // Immediately disable button and show only the rotating spinner
         this.setButtonState("generating");
 
+        // Unlock Web Audio during the Generate gesture before the model starts working.
+        this.setupPlaybackVisualizer();
+        if (this.playbackCtx?.state === "suspended") {
+            this.playbackCtx.resume().catch(() => {});
+        }
+
         let targetVoice = this.el.voiceSelect?.value || this.currentVoice || "alba";
 
         const temperature = parseFloat(this.el.temperatureSlider?.value || "0.7");
@@ -734,7 +740,7 @@ export class PocketTTSClient {
     }
 
     // Full audio is assembled and ready to play once generation finishes completely!
-    handleStreamEnd() {
+    async handleStreamEnd() {
         this.isGenerating = false;
         this.setButtonState("ready", "Generate Speech");
         if (this.el.stopBtn) this.el.stopBtn.disabled = true;
@@ -775,8 +781,19 @@ export class PocketTTSClient {
                 this.el.downloadBtn.disabled = false;
             }
 
-            this.updateStatus("Voice ready! Press play below to listen.", "idle");
+            this.updateStatus("Voice ready!", "idle");
             if (this.el.statStatus) this.el.statStatus.textContent = "Ready";
+
+            const completedUrl = this.lastCompletedAudioUrl;
+            if (this.el.audioPlayback) {
+                try {
+                    await this.el.audioPlayback.play();
+                } catch {
+                    if (this.lastCompletedAudioUrl === completedUrl && !this.isGenerating) {
+                        this.updateStatus("Voice ready! Press play below to listen.", "idle");
+                    }
+                }
+            }
 
         }
     }
